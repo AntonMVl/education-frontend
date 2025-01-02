@@ -1,0 +1,34 @@
+@use '../../styles/mixins' as mixins;
+
+.header {
+	width: 100%;
+	height: 7vh;
+	padding: 1vh 2vw;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	box-sizing: border-box;
+}
+
+.header__button {
+	@include mixins.defaultButton();
+	width: 60px;
+	height: 60px;
+	box-sizing: border-box;
+	border-radius: 50%;
+	background-color: #fff;
+}
+
+.header__buttonIcon {
+	width: 100%;
+	height: 100%;
+}
+
+.header__linksContainer {
+	display: flex;
+	gap: 2vw;
+}
+
+.header__link {
+	@include mixins.deleteStylesByLinks();
+}

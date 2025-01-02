@@ -1,0 +1,20 @@
+@mixin deleteStylesByLinks {
+	margin: 0;
+	padding: 0;
+	color: #fff;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+@mixin defaultButton {
+	border: none;
+	margin: 0;
+	padding: 0;
+	cursor: pointer;
+}
+
+@mixin fontSize($size, $weight, $height) {
+	font-size: $size;
+	font-weight: $weight;
+	line-height: $height;
+}
