@@ -1,13 +1,18 @@
-import Header from '../../components/Header/Header'
-import styles from './StartPage.module.scss'
+import { FC } from 'react'
+import { Footer } from '../../components/Footer/Footer'
+import { Header } from '../../components/Header/Header'
+import styles from './startPage.module.scss'
 
-export default function StartPage() {
+const StartPage: FC = () => {
 	return (
-		<>
+		<div className={styles.page}>
 			<Header />
 			<section className={styles.page__container}>
-				<h1>hi all again</h1>
+				<h1>Hi all again</h1>
 			</section>
-		</>
+			<Footer />
+		</div>
 	)
 }
+
+export default StartPage

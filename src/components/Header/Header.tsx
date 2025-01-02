@@ -1,8 +1,9 @@
+import { FC } from 'react'
 import { Link } from 'react-router-dom'
 import mainIcon from '../../assets/main-icon.png'
 import styles from './header.module.scss'
 
-export default function Header() {
+export const Header: FC = () => {
 	return (
 		<section className={styles.header}>
 			<Link to='#' className={styles.header__button}>
@@ -13,10 +14,10 @@ export default function Header() {
 				/>
 			</Link>
 			<div className={styles.header__linksContainer}>
-				<Link className={styles.header__link} to='#'>
+				<Link className={styles.header__link} to='/signin'>
 					Вход
 				</Link>
-				<Link className={styles.header__link} to='#'>
+				<Link className={styles.header__link} to='/signup'>
 					Регистрация
 				</Link>
 			</div>
