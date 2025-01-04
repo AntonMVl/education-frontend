@@ -1,0 +1,34 @@
+@use '../../styles/mixins' as mixins;
+
+.signIn {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	padding-top: 15%;
+	gap: 2vh;
+
+	&__button {
+		@include mixins.defaultButton();
+		width: 100px;
+		height: 100px;
+		box-sizing: border-box;
+		border-radius: 50%;
+		background-color: #fff;
+		transition: transform 0.3s ease;
+
+		&:hover {
+			transform: scale(1.1);
+		}
+
+		&Icon {
+			width: 100%;
+			height: 100%;
+		}
+	}
+
+	&__title {
+		@include mixins.fontSize(30px, 600, 15px);
+	}
+}

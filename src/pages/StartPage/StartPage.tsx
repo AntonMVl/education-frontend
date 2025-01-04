@@ -8,7 +8,9 @@ const StartPage: FC = () => {
 		<div className={styles.page}>
 			<Header />
 			<section className={styles.page__container}>
-				<h1>Hi all again</h1>
+				<h1>
+					Тут будет содержимое первой страницы - текст, кнопки и прочая хрень
+				</h1>
 			</section>
 			<Footer />
 		</div>

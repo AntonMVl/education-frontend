@@ -6,7 +6,7 @@ import styles from './header.module.scss'
 export const Header: FC = () => {
 	return (
 		<section className={styles.header}>
-			<Link to='#' className={styles.header__button}>
+			<Link to='/' className={styles.header__button}>
 				<img
 					src={mainIcon}
 					alt='main-icon'
