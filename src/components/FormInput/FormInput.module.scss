@@ -1,0 +1,51 @@
+@use '../../styles/mixins.scss' as mixins;
+
+.formInput__container {
+	border: none;
+	margin: 0;
+	padding: 0;
+	width: 40%;
+}
+
+.formInput__title {
+	margin-bottom: 2%;
+}
+
+.formInput__input {
+	width: 100%;
+	box-sizing: border-box;
+	background: none;
+	border: none;
+	border-bottom: 2px solid white;
+	color: white;
+	outline: none;
+	font-size: 16px;
+	transition: border-color 0.3s ease;
+
+	&::placeholder {
+		color: rgba(255, 255, 255, 0.7);
+	}
+
+	&::selection {
+		background: rgba(64, 224, 208, 0.3);
+	}
+
+	&:focus {
+		border-bottom-color: #40e0d0;
+		caret-color: white;
+	}
+
+	&.formInput__input_type_active {
+		border-bottom-color: #40e0d0;
+	}
+}
+
+.formInput__inputError {
+	@include mixins.fontSize(12px, 500, 8px);
+	color: red;
+	visibility: hidden;
+
+	&.formInput__inputError_type_active {
+		visibility: visible;
+	}
+}
