@@ -1,0 +1,55 @@
+@use '../../styles/mixins.scss' as mixins;
+
+.dropdown__container {
+	position: relative;
+	width: 40%;
+}
+
+.dropdown__input {
+	width: 100%;
+	box-sizing: border-box;
+	background: none;
+	border: none;
+	border-bottom: 2px solid white;
+	color: white;
+	outline: none;
+	font-size: 16px;
+	padding: 8px 0;
+	cursor: pointer;
+	transition: border-color 0.3s ease;
+
+	&::selection {
+		background: rgba(64, 224, 208, 0.3);
+	}
+
+	&.dropdown__input_active {
+		border-bottom-color: #40e0d0;
+	}
+}
+
+.dropdown__menu {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	width: 100%;
+	background-color: white;
+	color: black;
+	border: 1px solid #40e0d0;
+	border-radius: 4px;
+	list-style: none;
+	margin: 4px 0 0;
+	padding: 0;
+	z-index: 10;
+}
+
+.dropdown__option {
+	padding: 8px 12px;
+	font-size: 16px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+
+	&:hover {
+		background-color: #40e0d0;
+		color: white;
+	}
+}
