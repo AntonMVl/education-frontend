@@ -7,3 +7,9 @@ export interface FormInputProps {
 export interface PopupProps {
 	isOpen: boolean
 }
+
+export interface DropdownProps {
+	name: string
+	options: string[]
+	defaultValue?: string
+}

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import mainIcon from '../../assets/main-icon.png'
 import Dropdown from '../../components/DropDown/DropDown'
 import FormInput from '../../components/FormInput/FormInput'
+import { cityNames, roleNames } from '../../constants/DropDownOptionValuse'
 import styles from './SignUp.module.scss'
 
 const SignUp: FC = () => {
@@ -20,10 +21,11 @@ const SignUp: FC = () => {
 				<div className={styles.signUp__inputContainer}>
 					<FormInput titleName='Имя:' inputName='firstName' />
 					<FormInput titleName='Фамилия:' inputName='lastName' />
-					<FormInput titleName='Логин:' inputName='login' />
+					<FormInput titleName='Login:' inputName='login' />
 				</div>
 				<div className={styles.signUp__inputContainer}>
-					<Dropdown />
+					<Dropdown name='Роль' options={roleNames} />
+					<Dropdown name='Город (район)' options={cityNames} />
 				</div>
 			</form>
 		</section>
