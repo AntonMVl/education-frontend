@@ -20,9 +20,9 @@ const SignUp: FC = () => {
 			<h1 className={styles.SignUp__title}>Регистрация пользователя </h1>
 			<form action='post' noValidate className={styles.SignUp__form}>
 				<div className={styles.signUp__inputContainer}>
-					<FormInput titleName='Имя:' inputName='firstName' />
-					<FormInput titleName='Фамилия:' inputName='lastName' />
-					<FormInput titleName='Login:' inputName='login' />
+					<FormInput titleName='Имя:' inputName='firstName' type='text' />
+					<FormInput titleName='Фамилия:' inputName='lastName' type='text' />
+					<FormInput titleName='Login:' inputName='login' type='text' />
 				</div>
 				<div className={styles.signUp__inputContainer}>
 					<Dropdown name='Роль' options={roleNames} />

@@ -1,6 +1,7 @@
 export interface FormInputProps {
 	titleName: string
 	inputName: string
+	type: string
 	errorMessage?: string
 }
 

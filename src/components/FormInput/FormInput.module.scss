@@ -49,3 +49,26 @@
 		visibility: visible;
 	}
 }
+
+.formInput__wrapper {
+	position: relative;
+}
+
+.formInput__togglePassword {
+	border: none;
+	background-color: transparent;
+	width: 40px;
+	height: 30px;
+	box-sizing: border-box;
+	border-radius: 50%;
+	position: absolute;
+	top: -25%;
+
+	&____togglePassword:hover {
+		text-decoration: underline;
+	}
+}
+.formInput__togglePasswordEye {
+	width: 100%;
+	height: 100%;
+}
