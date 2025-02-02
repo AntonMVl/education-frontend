@@ -1,28 +1,34 @@
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useRef, useState } from 'react'
 import { DropdownProps } from '../../types/formInputTupes'
 import styles from './DropDown.module.scss'
 
-const Dropdown: FC<DropdownProps> = ({ name, options, defaultValue }) => {
+const Dropdown: FC<DropdownProps> = ({
+	name,
+	options,
+	defaultValue,
+	onChange,
+}) => {
 	const [isOpen, setIsOpen] = useState(false)
 	const [selectedOption, setSelectedOption] = useState<string>(
-		defaultValue || ''
-	)
+		defaultValue || options[0]
+	) // ✅ Гарантируем начальное значение
 	const [filteredOptions, setFilteredOptions] = useState<string[]>(options)
 	const dropdownRef = useRef<HTMLDivElement>(null)
 
-	// Открытие/закрытие списка
-	const toggleDropdown = () => {
-		setIsOpen(prev => !prev)
-	}
-
-	// Выбор опции
+	// Обработчик выбора опции
 	const handleOptionClick = (option: string) => {
 		setSelectedOption(option)
 		setIsOpen(false)
-		setFilteredOptions(options) // Сброс фильтра после выбора
+		setFilteredOptions(options)
+
+		// Создаем совместимый `ChangeEvent`
+		const event = {
+			target: { name, value: option },
+		} as React.ChangeEvent<HTMLInputElement>
+		onChange(event) // ✅ Теперь TypeScript доволен
 	}
 
-	// Обработка ввода в поле
+	// Обработчик ввода
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.value
 		setSelectedOption(value)
@@ -33,33 +39,9 @@ const Dropdown: FC<DropdownProps> = ({ name, options, defaultValue }) => {
 				option.toLowerCase().startsWith(value.toLowerCase())
 			)
 		)
+
+		onChange(e) // ✅ Передаем корректный event
 	}
-
-	// Закрытие списка при клике вне компонента или нажатии Esc
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				dropdownRef.current &&
-				!dropdownRef.current.contains(event.target as Node)
-			) {
-				setIsOpen(false)
-			}
-		}
-
-		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.key === 'Escape') {
-				setIsOpen(false)
-			}
-		}
-
-		document.addEventListener('mousedown', handleClickOutside)
-		document.addEventListener('keydown', handleKeyDown)
-
-		return () => {
-			document.removeEventListener('mousedown', handleClickOutside)
-			document.removeEventListener('keydown', handleKeyDown)
-		}
-	}, [])
 
 	return (
 		<div className={styles.dropdown__container} ref={dropdownRef}>
@@ -72,7 +54,7 @@ const Dropdown: FC<DropdownProps> = ({ name, options, defaultValue }) => {
 					isOpen ? styles.dropdown__input_active : ''
 				}`}
 				value={selectedOption}
-				onClick={toggleDropdown}
+				onClick={() => setIsOpen(prev => !prev)}
 				onChange={handleInputChange}
 				placeholder='Выберите значение'
 			/>

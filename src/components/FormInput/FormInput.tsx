@@ -8,23 +8,12 @@ const FormInput: FC<FormInputProps> = ({
 	titleName,
 	inputName,
 	type,
-	errorMessage = 'Поле обязательно для заполнения',
+	onChange,
 }) => {
 	const [inputStates, setInputStates] = useState<
 		Record<string, { hasText: boolean; touched: boolean }>
 	>({})
 	const [isPasswordVisible, setIsPasswordVisible] = useState(false)
-
-	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = event.target
-		setInputStates(prevState => ({
-			...prevState,
-			[name]: {
-				...prevState[name],
-				hasText: value.trim().length > 0,
-			},
-		}))
-	}
 
 	const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
 		const { name } = event.target
@@ -54,7 +43,7 @@ const FormInput: FC<FormInputProps> = ({
 							? styles.formInput__input_type_active
 							: ''
 					}`}
-					onChange={handleInputChange}
+					onChange={onChange}
 					onBlur={handleBlur}
 					autoComplete='off'
 					required
@@ -83,15 +72,6 @@ const FormInput: FC<FormInputProps> = ({
 					</button>
 				)}
 			</div>
-			<span
-				className={`${styles.formInput__inputError} ${
-					inputStates[inputName]?.touched && !inputStates[inputName]?.hasText
-						? styles.formInput__inputError_type_active
-						: ''
-				}`}
-			>
-				{errorMessage}
-			</span>
 		</fieldset>
 	)
 }

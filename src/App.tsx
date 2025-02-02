@@ -8,19 +8,13 @@ import StartPage from './pages/StartPage/StartPage'
 import mainApi from './utils/authApi'
 
 import './App.scss'
-
-type UserData = {
-	firstName: string
-	lastName: string
-	login: string
-	role: string
-	city: string
-}
+import { UserData } from './types/api'
 
 function App() {
 	const [isPass, setIsPass] = useState<boolean>(false)
 	const [loggedIn, setLoggedIn] = useState<boolean>(false)
 	const [isError, setIsError] = useState<boolean>(false)
+	const [isPlainPassword, setIsPlainPassword] = useState<string>('')
 	const navigate = useNavigate()
 
 	async function login(login: string, password: string) {
@@ -53,9 +47,10 @@ function App() {
 				userData.role,
 				userData.city
 			)
-			const { plainPassword } = response.user
+			const { plainPassword } = response
 			if (plainPassword) {
-				await login(userData.login, plainPassword)
+				setIsPlainPassword(plainPassword)
+				console.log('Пароль для сохранения:', plainPassword)
 			} else {
 				console.error('Ошибка получения пароля для автоматической авторизации')
 			}
@@ -73,7 +68,10 @@ function App() {
 				<Routes>
 					<Route path='/' element={<StartPage />} />
 					<Route path='/signin' element={<SignIn />} />
-					<Route path='/signup' element={<SignUp />} />
+					<Route
+						path='/signup'
+						element={<SignUp registration={registration} />}
+					/>
 				</Routes>
 			</div>
 		</div>
