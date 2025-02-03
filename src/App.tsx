@@ -1,26 +1,52 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Route, Routes, useNavigate } from 'react-router-dom'
 import './App.scss'
 import Popup from './components/Popup/Popup'
+import Preloader from './components/Preloader/Preloader'
 import SignIn from './pages/SignIn/SignIn'
 import SignUp from './pages/SignUp/SignUp'
 import StartPage from './pages/StartPage/StartPage'
+import UserAccount from './pages/UserAccount/UserAccount'
 import { UserData } from './types/api'
 import mainApi from './utils/authApi'
 
 function App() {
-	const [isPass, setIsPass] = useState(false)
-	const [loggedIn, setLoggedIn] = useState(false)
-	const [isError, setIsError] = useState(false)
+	const [isPass, setIsPass] = useState<boolean>(false)
+	const [loggedIn, setLoggedIn] = useState<boolean>(false)
+	const [isError, setIsError] = useState<boolean>(false)
 	const [errorMessage, setErrorMessage] = useState<string>('')
-	const [isOpen, setIsOpen] = useState(false)
-	const [isPlainPassword, setIsPlainPassword] = useState('')
+	const [currentUser, setCurrentUser] = useState({})
+	const [isTokenCheck, setIsTokenCheck] = useState<boolean>(true)
+	const [isOpen, setIsOpen] = useState<boolean>(false)
+	const [isPlainPassword, setIsPlainPassword] = useState<string>('')
 	const navigate = useNavigate()
 
 	const closeAllPopups = useCallback(() => {
 		setIsOpen(false)
 		setIsPlainPassword('')
 	}, [])
+
+	useEffect(() => {
+		if (localStorage.jwt) {
+			mainApi
+				.getUserInfo(localStorage.jwt)
+				.then(userData => {
+					setCurrentUser(userData)
+					setLoggedIn(true)
+					console.log(currentUser)
+				})
+				.catch(err => {
+					console.error(`Ошибка при загрузке данных пользователя ${err}`)
+					localStorage.clear()
+					setLoggedIn(false)
+				})
+				.finally(() => setIsTokenCheck(false))
+		} else {
+			setLoggedIn(false)
+			setIsTokenCheck(false)
+			localStorage.clear()
+		}
+	}, [loggedIn])
 
 	async function login(login: string, password: string) {
 		try {
@@ -30,7 +56,7 @@ function App() {
 			if (token) {
 				localStorage.setItem('jwt', token)
 				setLoggedIn(true)
-				setErrorMessage(null)
+				setErrorMessage('')
 				navigate('/', { replace: true })
 			} else {
 				setErrorMessage('Ошибка: токен не найден')
@@ -58,7 +84,6 @@ function App() {
 			const { plainPassword } = response
 			if (plainPassword) {
 				setIsPlainPassword(plainPassword)
-				console.log('Пароль для сохранения:', plainPassword)
 				setIsOpen(true)
 			} else {
 				console.error('Ошибка получения пароля для автоматической авторизации')
@@ -73,19 +98,24 @@ function App() {
 
 	return (
 		<div className='body'>
-			<div className='page'>
-				<Routes>
-					<Route path='/' element={<StartPage />} />
-					<Route
-						path='/signin'
-						element={<SignIn login={login} errorMessage={errorMessage} />}
-					/>
-					<Route
-						path='/signup'
-						element={<SignUp registration={registration} />}
-					/>
-				</Routes>
-			</div>
+			{isTokenCheck ? (
+				<Preloader />
+			) : (
+				<div className='page'>
+					<Routes>
+						<Route path='/' element={<StartPage />} />
+						<Route
+							path='/signin'
+							element={<SignIn login={login} errorMessage={errorMessage} />}
+						/>
+						<Route
+							path='/signup'
+							element={<SignUp registration={registration} />}
+						/>
+						<Route path='/user-info' element={<UserAccount />} />
+					</Routes>
+				</div>
+			)}
 			<Popup
 				isOpen={isOpen}
 				isPlainPassword={isPlainPassword}
