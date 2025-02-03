@@ -1,4 +1,4 @@
-import { FC, useRef, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import { DropdownProps } from '../../types/formInputTupes'
 import styles from './DropDown.module.scss'
 
@@ -14,6 +14,33 @@ const Dropdown: FC<DropdownProps> = ({
 	) // ✅ Гарантируем начальное значение
 	const [filteredOptions, setFilteredOptions] = useState<string[]>(options)
 	const dropdownRef = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				dropdownRef.current &&
+				!dropdownRef.current.contains(event.target as Node)
+			) {
+				setIsOpen(false)
+			}
+		}
+
+		// Закрытие dropdown при нажатии Escape
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') {
+				setIsOpen(false)
+			}
+		}
+
+		document.addEventListener('mousedown', handleClickOutside)
+		document.addEventListener('keydown', handleKeyDown)
+
+		// Очистка обработчиков при размонтировании
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside)
+			document.removeEventListener('keydown', handleKeyDown)
+		}
+	}, [])
 
 	// Обработчик выбора опции
 	const handleOptionClick = (option: string) => {

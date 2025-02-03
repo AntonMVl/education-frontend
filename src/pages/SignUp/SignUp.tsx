@@ -1,9 +1,12 @@
 import { FC, useState } from 'react'
+import { Link } from 'react-router-dom'
+import mainIcon from '../../assets/main-icon.png'
 import Dropdown from '../../components/DropDown/DropDown'
 import FormInput from '../../components/FormInput/FormInput'
 import SignButton from '../../components/SignButton/SignButton'
 import { cityNames, roleNames } from '../../constants/DropDownOptionValuse'
 import { ISignUpProps } from '../../types/api'
+
 import styles from './SignUp.module.scss'
 
 const SignUp: FC<ISignUpProps> = ({ registration }) => {
@@ -36,9 +39,16 @@ const SignUp: FC<ISignUpProps> = ({ registration }) => {
 	}
 
 	return (
-		<section className={styles.SignUp}>
+		<section className={styles.signUp}>
+			<Link to='/' className={styles.signUp__button}>
+				<img
+					src={mainIcon}
+					alt='main-icon'
+					className={styles.signUp__buttonIcon}
+				/>
+			</Link>
 			<h1 className={styles.SignUp__title}>Регистрация пользователя</h1>
-			<form onSubmit={handleSubmit} noValidate className={styles.SignUp__form}>
+			<form onSubmit={handleSubmit} noValidate className={styles.signUp__form}>
 				<div className={styles.signUp__inputContainer}>
 					<FormInput
 						titleName='Имя:'

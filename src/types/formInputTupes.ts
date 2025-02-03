@@ -10,6 +10,8 @@ export interface FormInputProps {
 
 export interface PopupProps {
 	isOpen: boolean
+	onClose: () => void
+	isPlainPassword: string
 }
 
 export interface DropdownProps {

@@ -1,21 +1,27 @@
 import { Route, Routes, useNavigate } from 'react-router-dom'
 import './App.scss'
 // import SignIn from './pages/SignIn/SignIn'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
+import './App.scss'
+import Popup from './components/Popup/Popup'
 import SignIn from './pages/SignIn/SignIn'
 import SignUp from './pages/SignUp/SignUp'
 import StartPage from './pages/StartPage/StartPage'
-import mainApi from './utils/authApi'
-
-import './App.scss'
 import { UserData } from './types/api'
+import mainApi from './utils/authApi'
 
 function App() {
 	const [isPass, setIsPass] = useState<boolean>(false)
 	const [loggedIn, setLoggedIn] = useState<boolean>(false)
 	const [isError, setIsError] = useState<boolean>(false)
+	const [isOpen, setIsOpen] = useState<boolean>(true)
 	const [isPlainPassword, setIsPlainPassword] = useState<string>('')
 	const navigate = useNavigate()
+
+	const closeAllPopups = useCallback(() => {
+		setIsOpen(false)
+		setIsPlainPassword('')
+	}, [])
 
 	async function login(login: string, password: string) {
 		try {
@@ -51,6 +57,7 @@ function App() {
 			if (plainPassword) {
 				setIsPlainPassword(plainPassword)
 				console.log('Пароль для сохранения:', plainPassword)
+				setIsOpen(true)
 			} else {
 				console.error('Ошибка получения пароля для автоматической авторизации')
 			}
@@ -74,6 +81,11 @@ function App() {
 					/>
 				</Routes>
 			</div>
+			<Popup
+				isOpen={isOpen}
+				isPlainPassword={isPlainPassword}
+				onClose={closeAllPopups}
+			/>
 		</div>
 	)
 }
