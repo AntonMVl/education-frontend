@@ -1,7 +1,5 @@
-import { Route, Routes, useNavigate } from 'react-router-dom'
-import './App.scss'
-// import SignIn from './pages/SignIn/SignIn'
 import { useCallback, useState } from 'react'
+import { Route, Routes, useNavigate } from 'react-router-dom'
 import './App.scss'
 import Popup from './components/Popup/Popup'
 import SignIn from './pages/SignIn/SignIn'
@@ -11,11 +9,12 @@ import { UserData } from './types/api'
 import mainApi from './utils/authApi'
 
 function App() {
-	const [isPass, setIsPass] = useState<boolean>(false)
-	const [loggedIn, setLoggedIn] = useState<boolean>(false)
-	const [isError, setIsError] = useState<boolean>(false)
-	const [isOpen, setIsOpen] = useState<boolean>(true)
-	const [isPlainPassword, setIsPlainPassword] = useState<string>('')
+	const [isPass, setIsPass] = useState(false)
+	const [loggedIn, setLoggedIn] = useState(false)
+	const [isError, setIsError] = useState(false)
+	const [errorMessage, setErrorMessage] = useState<string>('')
+	const [isOpen, setIsOpen] = useState(false)
+	const [isPlainPassword, setIsPlainPassword] = useState('')
 	const navigate = useNavigate()
 
 	const closeAllPopups = useCallback(() => {
@@ -31,11 +30,14 @@ function App() {
 			if (token) {
 				localStorage.setItem('jwt', token)
 				setLoggedIn(true)
+				setErrorMessage(null)
 				navigate('/', { replace: true })
 			} else {
+				setErrorMessage('Ошибка: токен не найден')
 				console.error('Ошибка авторизации: токен не найден', response)
 			}
 		} catch (error) {
+			setErrorMessage('Неверный логин или пароль')
 			setIsError(true)
 			console.error(`Ошибка входа в аккаунт ${error}`)
 		} finally {
@@ -74,7 +76,10 @@ function App() {
 			<div className='page'>
 				<Routes>
 					<Route path='/' element={<StartPage />} />
-					<Route path='/signin' element={<SignIn />} />
+					<Route
+						path='/signin'
+						element={<SignIn login={login} errorMessage={errorMessage} />}
+					/>
 					<Route
 						path='/signup'
 						element={<SignUp registration={registration} />}

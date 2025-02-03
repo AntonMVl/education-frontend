@@ -13,3 +13,8 @@ export type UserData = {
 export interface ISignUpProps {
 	registration: (userData: UserData) => Promise<void>
 }
+
+export interface ISignInProps {
+	login: (login: string, password: string) => void
+	errorMessage?: string
+}
