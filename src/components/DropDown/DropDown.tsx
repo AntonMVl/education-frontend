@@ -6,6 +6,7 @@ const Dropdown: FC<DropdownProps> = ({
 	name,
 	options,
 	defaultValue,
+	disabled,
 	onChange,
 }) => {
 	const [isOpen, setIsOpen] = useState(false)
@@ -84,6 +85,7 @@ const Dropdown: FC<DropdownProps> = ({
 				onClick={() => setIsOpen(prev => !prev)}
 				onChange={handleInputChange}
 				placeholder='Выберите значение'
+				disabled={disabled}
 			/>
 			{isOpen && (
 				<ul className={styles.dropdown__menu}>

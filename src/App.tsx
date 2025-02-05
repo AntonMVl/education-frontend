@@ -15,7 +15,13 @@ function App() {
 	const [loggedIn, setLoggedIn] = useState<boolean>(false)
 	const [isError, setIsError] = useState<boolean>(false)
 	const [errorMessage, setErrorMessage] = useState<string>('')
-	const [currentUser, setCurrentUser] = useState({})
+	const [currentUser, setCurrentUser] = useState<UserData>({
+		firstName: '',
+		lastName: '',
+		login: '',
+		role: '',
+		city: '',
+	})
 	const [isTokenCheck, setIsTokenCheck] = useState<boolean>(true)
 	const [isOpen, setIsOpen] = useState<boolean>(false)
 	const [isPlainPassword, setIsPlainPassword] = useState<string>('')
@@ -31,9 +37,8 @@ function App() {
 			mainApi
 				.getUserInfo(localStorage.jwt)
 				.then(userData => {
-					setCurrentUser(userData)
+					setCurrentUser(prev => ({ ...prev, ...userData }))
 					setLoggedIn(true)
-					console.log(currentUser)
 				})
 				.catch(err => {
 					console.error(`Ошибка при загрузке данных пользователя ${err}`)
@@ -46,7 +51,7 @@ function App() {
 			setIsTokenCheck(false)
 			localStorage.clear()
 		}
-	}, [loggedIn])
+	}, [])
 
 	async function login(login: string, password: string) {
 		try {
@@ -58,6 +63,9 @@ function App() {
 				setLoggedIn(true)
 				setErrorMessage('')
 				navigate('/', { replace: true })
+
+				const userData = await mainApi.getUserInfo(token)
+				setCurrentUser(userData)
 			} else {
 				setErrorMessage('Ошибка: токен не найден')
 				console.error('Ошибка авторизации: токен не найден', response)
@@ -96,6 +104,12 @@ function App() {
 		}
 	}
 
+	const signOut = () => {
+		localStorage.clear()
+		setLoggedIn(false)
+		navigate('/', { replace: true })
+	}
+
 	return (
 		<div className='body'>
 			{isTokenCheck ? (
@@ -103,7 +117,10 @@ function App() {
 			) : (
 				<div className='page'>
 					<Routes>
-						<Route path='/' element={<StartPage />} />
+						<Route
+							path='/'
+							element={<StartPage loggedIn={loggedIn} signOut={signOut} />}
+						/>
 						<Route
 							path='/signin'
 							element={<SignIn login={login} errorMessage={errorMessage} />}
@@ -112,7 +129,10 @@ function App() {
 							path='/signup'
 							element={<SignUp registration={registration} />}
 						/>
-						<Route path='/user-info' element={<UserAccount />} />
+						<Route
+							path='/profile'
+							element={<UserAccount currentUser={currentUser} />}
+						/>
 					</Routes>
 				</div>
 			)}

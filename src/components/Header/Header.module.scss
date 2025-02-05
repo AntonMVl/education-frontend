@@ -43,4 +43,18 @@
 			color: #40e0d0;
 		}
 	}
+	&__buttonLink {
+		@include mixins.defaultButton();
+		border: none;
+		background-color: transparent;
+		color: #fff;
+
+		@include mixins.fontSize(18px, 500, 18px);
+		transition: transform 0.3s ease, color 0.3s ease;
+
+		&:hover {
+			transform: scale(1.1);
+			color: #40e0d0;
+		}
+	}
 }

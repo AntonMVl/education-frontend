@@ -9,6 +9,8 @@ const FormInput: FC<FormInputProps> = ({
 	inputName,
 	type,
 	onChange,
+	disabled,
+	defaultValue,
 }) => {
 	const [inputStates, setInputStates] = useState<
 		Record<string, { hasText: boolean; touched: boolean }>
@@ -49,6 +51,8 @@ const FormInput: FC<FormInputProps> = ({
 					required
 					minLength={2}
 					maxLength={30}
+					defaultValue={defaultValue}
+					disabled={disabled}
 				/>
 				{type === 'password' && (
 					<button
