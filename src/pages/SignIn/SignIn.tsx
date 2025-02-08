@@ -45,7 +45,7 @@ const SignIn: FC<ISignInProps> = ({ login, errorMessage }) => {
 					/>
 				</div>
 				{errorMessage && <p className={styles.signIn__error}>{errorMessage}</p>}
-				<SignButton />
+				<SignButton buttonText='Войти' type='submit' />
 			</form>
 		</section>
 	)

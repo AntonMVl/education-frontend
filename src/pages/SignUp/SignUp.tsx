@@ -83,7 +83,7 @@ const SignUp: FC<ISignUpProps> = ({ registration }) => {
 						onChange={handleChange}
 					/>
 				</div>
-				<SignButton />
+				<SignButton buttonText='Регистрация' type='submit' />
 			</form>
 		</section>
 	)

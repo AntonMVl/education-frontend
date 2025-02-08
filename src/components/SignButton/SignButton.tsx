@@ -1,13 +1,10 @@
 import { FC } from 'react'
-import { useLocation } from 'react-router-dom'
+import { IButtonProps } from '../../types/buttonTypes'
 import styles from './SignButton.module.scss'
 
-const SignButton: FC = () => {
-	const location = useLocation()
-
-	const buttonText = location.pathname === '/signin' ? 'Вход' : 'Регистрация'
+const SignButton: FC<IButtonProps> = ({ buttonText, type, onClick }) => {
 	return (
-		<button className={styles.sign__button} type='submit'>
+		<button className={styles.sign__button} type={type} onClick={onClick}>
 			{buttonText}
 		</button>
 	)
