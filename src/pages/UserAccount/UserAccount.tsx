@@ -1,6 +1,7 @@
 import { FC, useState } from 'react'
 import { Link } from 'react-router-dom'
 import mainIcon from '../../assets/main-icon.png'
+import ChangePasswordInput from '../../components/ChangePassworInput/ChangePasswordInput'
 import Dropdown from '../../components/DropDown/DropDown'
 import FormInput from '../../components/FormInput/FormInput'
 import SignButton from '../../components/SignButton/SignButton'
@@ -55,12 +56,19 @@ const UserAccount: FC<IProfileProps> = ({ currentUser }) => {
 				</div>
 				<div className={styles.profile__inputContainer}>
 					<Dropdown
-						name='City'
+						name='Город:'
 						options={cityNames}
 						defaultValue={currentUser.city}
 						disabled={!isEditing}
 					/>
 				</div>
+				{isEditing ? (
+					<div className={styles.profile__inputContainer}>
+						<ChangePasswordInput />
+					</div>
+				) : (
+					<></>
+				)}
 				<div className={styles.profile__inputContainer}>
 					{isEditing ? (
 						<>
