@@ -9,6 +9,8 @@ export interface FormInputProps {
 	errorMessage?: string
 	disabled?: boolean
 	onChange?: (e: ChangeEvent<HTMLInputElement>) => void
+	isPasswordVisible?: boolean
+	onTogglePasswordVisibility?: () => void
 }
 
 export interface PopupProps {

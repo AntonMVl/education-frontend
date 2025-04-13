@@ -3,11 +3,14 @@ import { Link } from 'react-router-dom'
 import mainIcon from '../../assets/main-icon.png'
 import FormInput from '../../components/FormInput/FormInput'
 import SignButton from '../../components/SignButton/SignButton'
+import usePasswordVisibility from '../../hooks/usePasswordVisibility'
 import { ISignInProps } from '../../types/api'
 import styles from './signIn.module.scss'
 
 const SignIn: FC<ISignInProps> = ({ login, errorMessage }) => {
 	const [formData, setFormData] = useState({ login: '', password: '' })
+	const { isPasswordVisible, togglePasswordVisibility } =
+		usePasswordVisibility()
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target
@@ -42,6 +45,8 @@ const SignIn: FC<ISignInProps> = ({ login, errorMessage }) => {
 						inputName='password'
 						type='password'
 						onChange={handleChange}
+						isPasswordVisible={isPasswordVisible} // 👈 передаём видимость
+						onTogglePasswordVisibility={togglePasswordVisibility} // 👈 и переключение
 					/>
 				</div>
 				{errorMessage && <p className={styles.signIn__error}>{errorMessage}</p>}

@@ -11,11 +11,12 @@ const FormInput: FC<FormInputProps> = ({
 	onChange,
 	disabled,
 	defaultValue,
+	isPasswordVisible,
+	onTogglePasswordVisibility, // новый проп
 }) => {
 	const [inputStates, setInputStates] = useState<
 		Record<string, { hasText: boolean; touched: boolean }>
 	>({})
-	const [isPasswordVisible, setIsPasswordVisible] = useState(false)
 
 	const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
 		const { name } = event.target
@@ -28,16 +29,14 @@ const FormInput: FC<FormInputProps> = ({
 		}))
 	}
 
-	const togglePasswordVisibility = () => {
-		setIsPasswordVisible(prevState => !prevState)
-	}
+	const isPasswordField = type === 'password'
 
 	return (
 		<fieldset className={styles.formInput__container}>
 			<p className={styles.formInput__title}>{titleName}</p>
 			<div className={styles.formInput__wrapper}>
 				<input
-					type={type === 'password' && isPasswordVisible ? 'text' : type}
+					type={isPasswordField && isPasswordVisible ? 'text' : type}
 					name={inputName}
 					id={inputName}
 					className={`${styles.formInput__input} ${
@@ -54,25 +53,17 @@ const FormInput: FC<FormInputProps> = ({
 					defaultValue={defaultValue}
 					disabled={disabled}
 				/>
-				{type === 'password' && (
+				{isPasswordField && onTogglePasswordVisibility && (
 					<button
 						type='button'
 						className={styles.formInput__togglePassword}
-						onClick={togglePasswordVisibility}
+						onClick={onTogglePasswordVisibility}
 					>
-						{isPasswordVisible ? (
-							<img
-								src={passwordOpen}
-								alt='Глазик'
-								className={styles.formInput__togglePasswordEye}
-							/>
-						) : (
-							<img
-								src={passwordClose}
-								alt='Глазик'
-								className={styles.formInput__togglePasswordEye}
-							/>
-						)}
+						<img
+							src={isPasswordVisible ? passwordOpen : passwordClose}
+							alt='Глазик'
+							className={styles.formInput__togglePasswordEye}
+						/>
 					</button>
 				)}
 			</div>
