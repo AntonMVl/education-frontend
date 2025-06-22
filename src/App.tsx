@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Route, Routes, useNavigate } from 'react-router-dom'
 import './App.scss'
+import Layout from './components/Layout/Layout'
 import Popup from './components/Popup/Popup'
 import Preloader from './components/Preloader/Preloader'
+import Courses from './pages/Courses/Courses'
 import SignIn from './pages/SignIn/SignIn'
 import SignUp from './pages/SignUp/SignUp'
 import StartPage from './pages/StartPage/StartPage'
@@ -117,22 +119,22 @@ function App() {
 			) : (
 				<div className='page'>
 					<Routes>
-						<Route
-							path='/'
-							element={<StartPage loggedIn={loggedIn} signOut={signOut} />}
-						/>
-						<Route
-							path='/signin'
-							element={<SignIn login={login} errorMessage={errorMessage} />}
-						/>
-						<Route
-							path='/signup'
-							element={<SignUp registration={registration} />}
-						/>
-						<Route
-							path='/profile'
-							element={<UserAccount currentUser={currentUser} />}
-						/>
+						<Route element={<Layout loggedIn={loggedIn} signOut={signOut} />}>
+							<Route path='/' element={<StartPage />} />
+							<Route
+								path='/signin'
+								element={<SignIn login={login} errorMessage={errorMessage} />}
+							/>
+							<Route
+								path='/signup'
+								element={<SignUp registration={registration} />}
+							/>
+							<Route
+								path='/profile'
+								element={<UserAccount currentUser={currentUser} />}
+							/>
+							<Route path='/courses' element={<Courses />} />
+						</Route>
 					</Routes>
 				</div>
 			)}

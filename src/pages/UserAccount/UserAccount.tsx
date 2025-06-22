@@ -90,7 +90,9 @@ const UserAccount: FC<IProfileProps> = ({ currentUser }) => {
 								type='button'
 								onClick={toggleButtonUserData}
 							/>
-							<SignButton buttonText='К обучению' type='button' />
+							<Link to={'/courses'} className={styles.profile__buttonLink}>
+								К обучению
+							</Link>
 						</>
 					)}
 				</div>

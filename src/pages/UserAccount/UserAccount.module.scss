@@ -49,3 +49,22 @@
 	justify-content: center;
 	gap: 5%;
 }
+
+.profile__buttonLink {
+	@include mixins.deleteStylesByLinks();
+	width: 250px;
+	height: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	border-radius: 5%;
+	background-color: #fff;
+	color: #000;
+	transition: transform 0.3s ease;
+
+	&:hover {
+		transform: scale(1.1);
+		background-color: #40e0d0;
+	}
+}

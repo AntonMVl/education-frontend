@@ -1,4 +1,4 @@
-export interface IStartPageProps {
+export interface ILayoutProps {
 	loggedIn: boolean
 	signOut: () => void
 }
