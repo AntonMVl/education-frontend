@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { apiUrl } from '../constants/urlConstants'
 import { IMainApiConfig } from '../types/api'
 
@@ -8,15 +9,6 @@ class MainApi {
 		this._url = config.url
 	}
 
-	// Метод проверки ответа от сервера
-	private async _checkResponse(res: Response) {
-		if (res.ok) {
-			return await res.json()
-		} else {
-			throw new Error(`Ошибка: ${res.status}`)
-		}
-	}
-
 	// Метод регистрации нового пользователя
 	async register(
 		firstName: string,
@@ -25,62 +17,64 @@ class MainApi {
 		role: string,
 		city: string
 	) {
-		const response = await fetch(`${this._url}/user`, {
-			method: 'POST',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
+		const response = await axios.post(
+			`${this._url}/user`,
+			{
 				firstName,
 				lastName,
 				login,
 				role,
 				city,
-			}),
-		})
-		return this._checkResponse(response)
+			},
+			{
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/json',
+				},
+			}
+		)
+		return response.data
 	}
 
 	// Метод авторизации пользователя
 	async login(login: string, password: string) {
-		const response = await fetch(`${this._url}/auth/login`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
+		const response = await axios.post(
+			`${this._url}/auth/login`,
+			{
 				login,
 				password,
-			}),
-		})
-		return this._checkResponse(response)
+			},
+			{
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			}
+		)
+		return response.data
 	}
 
 	// Получение информации о пользователе
 	async getUserInfo(token: string) {
-		const response = await fetch(`${this._url}/auth/profile`, {
+		const response = await axios.get(`${this._url}/auth/profile`, {
 			headers: {
 				Authorization: `Bearer ${token}`,
 			},
 		})
-		return this._checkResponse(response)
+		return response.data
 	}
 
-	// Обновление информации о пользователе
+	// Обновление информации о пользователе (пример, если понадобится)
 	// async setUserInfo(username: string, email: string, token: string) {
-	// 	const response = await fetch(`${this._url}/users/me`, {
-	// 		method: 'PATCH',
+	// 	const response = await axios.patch(`${this._url}/users/me`, {
+	// 		name: username,
+	// 		email,
+	// 	}, {
 	// 		headers: {
 	// 			'Content-Type': 'application/json',
 	// 			Authorization: `Bearer ${token}`,
 	// 		},
-	// 		body: JSON.stringify({
-	// 			name: username,
-	// 			email,
-	// 		}),
 	// 	})
-	// 	return this._checkResponse(response)
+	// 	return response.data
 	// }
 }
 
