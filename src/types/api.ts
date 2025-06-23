@@ -8,6 +8,7 @@ export type UserData = {
 	login: string
 	role: string
 	city: string
+	password?: string
 }
 
 export interface ISignUpProps {

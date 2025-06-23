@@ -63,6 +63,17 @@ class MainApi {
 		return response.data
 	}
 
+	// Обновление данных пользователя
+	async updateUser(data: Partial<UserData>, token: string) {
+		const response = await axios.patch(`${this._url}/auth/profile`, data, {
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${token}`,
+			},
+		})
+		return response.data
+	}
+
 	// Обновление информации о пользователе (пример, если понадобится)
 	// async setUserInfo(username: string, email: string, token: string) {
 	// 	const response = await axios.patch(`${this._url}/users/me`, {

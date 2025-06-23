@@ -6,15 +6,20 @@ const Dropdown: FC<DropdownProps> = ({
 	name,
 	options,
 	defaultValue,
+	value,
 	disabled,
 	onChange,
 }) => {
 	const [isOpen, setIsOpen] = useState(false)
 	const [selectedOption, setSelectedOption] = useState<string>(
-		defaultValue || options[0]
-	) // ✅ Гарантируем начальное значение
+		value ?? defaultValue ?? options[0]
+	)
 	const [filteredOptions, setFilteredOptions] = useState<string[]>(options)
 	const dropdownRef = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		if (value !== undefined) setSelectedOption(value)
+	}, [value])
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -45,7 +50,7 @@ const Dropdown: FC<DropdownProps> = ({
 
 	// Обработчик выбора опции
 	const handleOptionClick = (option: string) => {
-		setSelectedOption(option)
+		if (value === undefined) setSelectedOption(option)
 		setIsOpen(false)
 		setFilteredOptions(options)
 
@@ -58,13 +63,13 @@ const Dropdown: FC<DropdownProps> = ({
 
 	// Обработчик ввода
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.value
-		setSelectedOption(value)
+		const val = e.target.value
+		if (value === undefined) setSelectedOption(val)
 
 		// Фильтрация списка опций
 		setFilteredOptions(
 			options.filter(option =>
-				option.toLowerCase().startsWith(value.toLowerCase())
+				option.toLowerCase().startsWith(val.toLowerCase())
 			)
 		)
 
@@ -81,7 +86,7 @@ const Dropdown: FC<DropdownProps> = ({
 				className={`${styles.dropdown__input} ${
 					isOpen ? styles.dropdown__input_active : ''
 				}`}
-				value={selectedOption}
+				value={value !== undefined ? value : selectedOption}
 				onClick={() => setIsOpen(prev => !prev)}
 				onChange={handleInputChange}
 				placeholder='Выберите значение'
@@ -104,7 +109,11 @@ const Dropdown: FC<DropdownProps> = ({
 					)}
 				</ul>
 			)}
-			<input type='hidden' name={name} value={selectedOption} />
+			<input
+				type='hidden'
+				name={name}
+				value={value !== undefined ? value : selectedOption}
+			/>
 		</div>
 	)
 }

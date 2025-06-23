@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import { Route, Routes, useNavigate } from 'react-router-dom'
 import './App.scss'
 import Layout from './components/Layout/Layout'
@@ -9,6 +10,7 @@ import SignIn from './pages/SignIn/SignIn'
 import SignUp from './pages/SignUp/SignUp'
 import StartPage from './pages/StartPage/StartPage'
 import UserAccount from './pages/UserAccount/UserAccount'
+import { clearUser, setUser } from './store/userSlice'
 import { UserData } from './types/api'
 import mainApi from './utils/authApi'
 
@@ -28,6 +30,7 @@ function App() {
 	const [isOpen, setIsOpen] = useState<boolean>(false)
 	const [isPlainPassword, setIsPlainPassword] = useState<string>('')
 	const navigate = useNavigate()
+	const dispatch = useDispatch()
 
 	const closeAllPopups = useCallback(() => {
 		setIsOpen(false)
@@ -41,19 +44,22 @@ function App() {
 				.then(userData => {
 					setCurrentUser(prev => ({ ...prev, ...userData }))
 					setLoggedIn(true)
+					dispatch(setUser(userData))
 				})
 				.catch(err => {
 					console.error(`Ошибка при загрузке данных пользователя ${err}`)
 					localStorage.clear()
 					setLoggedIn(false)
+					dispatch(clearUser())
 				})
 				.finally(() => setIsTokenCheck(false))
 		} else {
 			setLoggedIn(false)
 			setIsTokenCheck(false)
 			localStorage.clear()
+			dispatch(clearUser())
 		}
-	}, [])
+	}, [dispatch])
 
 	async function login(login: string, password: string) {
 		try {
@@ -68,6 +74,7 @@ function App() {
 
 				const userData = await mainApi.getUserInfo(token)
 				setCurrentUser(userData)
+				dispatch(setUser(userData))
 			} else {
 				setErrorMessage('Ошибка: токен не найден')
 				console.error('Ошибка авторизации: токен не найден', response)
@@ -110,6 +117,7 @@ function App() {
 		localStorage.clear()
 		setLoggedIn(false)
 		navigate('/', { replace: true })
+		dispatch(clearUser())
 	}
 
 	return (
@@ -129,10 +137,7 @@ function App() {
 								path='/signup'
 								element={<SignUp registration={registration} />}
 							/>
-							<Route
-								path='/profile'
-								element={<UserAccount currentUser={currentUser} />}
-							/>
+							<Route path='/profile' element={<UserAccount />} />
 							<Route path='/courses' element={<Courses />} />
 						</Route>
 					</Routes>

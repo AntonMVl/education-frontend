@@ -11,6 +11,7 @@ export interface FormInputProps {
 	onChange?: (e: ChangeEvent<HTMLInputElement>) => void
 	isPasswordVisible?: boolean
 	onTogglePasswordVisibility?: () => void
+	value?: string
 }
 
 export interface PopupProps {
@@ -23,6 +24,7 @@ export interface DropdownProps {
 	name: string
 	options: string[]
 	defaultValue?: string
+	value?: string
 	disabled?: boolean
 	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
 }

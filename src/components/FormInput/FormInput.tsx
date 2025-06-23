@@ -13,6 +13,7 @@ const FormInput: FC<FormInputProps> = ({
 	defaultValue,
 	isPasswordVisible,
 	onTogglePasswordVisibility, // новый проп
+	value,
 }) => {
 	const [inputStates, setInputStates] = useState<
 		Record<string, { hasText: boolean; touched: boolean }>
@@ -50,7 +51,7 @@ const FormInput: FC<FormInputProps> = ({
 					required
 					minLength={2}
 					maxLength={30}
-					defaultValue={defaultValue}
+					{...(value !== undefined ? { value } : { defaultValue })}
 					disabled={disabled}
 				/>
 				{isPasswordField && onTogglePasswordVisibility && (
