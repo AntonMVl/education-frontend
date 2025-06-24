@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { Route, Routes, useNavigate } from 'react-router-dom'
 import './App.scss'
 import Layout from './components/Layout/Layout'
 import Popup from './components/Popup/Popup'
 import Preloader from './components/Preloader/Preloader'
+import { AdminPanel, AdminStats, UsersPage } from './pages/AdminPanel'
+import LecturesPage from './pages/AdminPanel/LecturesPage'
 import Courses from './pages/Courses/Courses'
 import SignIn from './pages/SignIn/SignIn'
 import SignUp from './pages/SignUp/SignUp'
 import StartPage from './pages/StartPage/StartPage'
 import UserAccount from './pages/UserAccount/UserAccount'
+import { RootState } from './store/store'
 import { clearUser, setUser } from './store/userSlice'
 import { UserData } from './types/api'
 import mainApi from './utils/authApi'
@@ -120,6 +123,18 @@ function App() {
 		dispatch(clearUser())
 	}
 
+	function ProtectedAdminRoute({ children }: { children: JSX.Element }) {
+		const currentUser = useSelector((state: RootState) => state.user.user)
+		if (!currentUser) {
+			return <Preloader />
+		}
+		const role = currentUser.role?.toLowerCase()
+		if (role !== 'admin' && role !== 'superadmin') {
+			return <div style={{ padding: 40, color: 'red' }}>Нет доступа</div>
+		}
+		return children
+	}
+
 	return (
 		<div className='body'>
 			{isTokenCheck ? (
@@ -139,6 +154,18 @@ function App() {
 							/>
 							<Route path='/profile' element={<UserAccount />} />
 							<Route path='/courses' element={<Courses />} />
+							<Route
+								path='/admin'
+								element={
+									<ProtectedAdminRoute>
+										<AdminPanel />
+									</ProtectedAdminRoute>
+								}
+							>
+								<Route index element={<AdminStats />} />
+								<Route path='users' element={<UsersPage />} />
+								<Route path='lectures' element={<LecturesPage />} />
+							</Route>
 						</Route>
 					</Routes>
 				</div>

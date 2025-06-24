@@ -3,6 +3,7 @@ export interface IMainApiConfig {
 }
 
 export type UserData = {
+	id?: number
 	firstName: string
 	lastName: string
 	login: string

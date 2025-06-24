@@ -1,0 +1,147 @@
+.container {
+	padding: 24px;
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 24px;
+}
+
+.header h1 {
+	margin: 0;
+	font-size: 1.875rem;
+	font-weight: 600;
+	color: #111827;
+}
+
+.createBtn {
+	background: #23272f;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	padding: 10px 20px;
+	font-size: 1rem;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+
+.createBtn:hover {
+	background: #3b4252;
+}
+
+.error {
+	background: #fee2e2;
+	color: #dc2626;
+	padding: 12px 16px;
+	border-radius: 6px;
+	margin-bottom: 16px;
+	border: 1px solid #fecaca;
+}
+
+.loading {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 200px;
+	font-size: 1.125rem;
+	color: #6b7280;
+}
+
+.searchContainer {
+	margin-bottom: 24px;
+}
+
+.searchInput {
+	width: 100%;
+	max-width: 400px;
+	padding: 10px 12px;
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	font-size: 1rem;
+	transition: border-color 0.2s;
+}
+
+.searchInput:focus {
+	outline: none;
+	border-color: #23272f;
+}
+
+.tableContainer {
+	background: #fff;
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.table th {
+	background: #f9fafb;
+	padding: 12px 16px;
+	text-align: left;
+	font-weight: 600;
+	color: #374151;
+	border-bottom: 1px solid #e5e7eb;
+}
+
+.table td {
+	padding: 12px 16px;
+	border-bottom: 1px solid #f3f4f6;
+	color: #111827;
+}
+
+.table tr:hover {
+	background: #f9fafb;
+}
+
+.description {
+	max-width: 300px;
+	color: #6b7280;
+}
+
+.actions {
+	display: flex;
+	gap: 8px;
+}
+
+.editBtn,
+.deleteBtn {
+	padding: 6px 12px;
+	border: none;
+	border-radius: 4px;
+	font-size: 0.875rem;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+
+.editBtn {
+	background: #dbeafe;
+	color: #1e40af;
+}
+
+.editBtn:hover {
+	background: #bfdbfe;
+}
+
+.deleteBtn {
+	background: #fee2e2;
+	color: #dc2626;
+}
+
+.deleteBtn:hover {
+	background: #fecaca;
+}
+
+.emptyMessage {
+	text-align: center;
+	color: #6b7280;
+	padding: 40px 16px;
+	font-style: italic;
+}

@@ -1,4 +1,4 @@
-export const roleNames: string[] = ['User', 'TeamLeader', 'Admin', 'SuperAdmin']
+export const roleNames: string[] = ['User', 'Admin', 'SuperAdmin']
 export const cityNames: string[] = [
 	'Сыктывкар',
 	'Эжва',
