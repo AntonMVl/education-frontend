@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { cityNames, roleNames } from '../../constants/DropDownOptionValuse'
+import {
+	cityNames,
+	roleDisplayNames,
+	roleNames,
+} from '../../constants/DropDownOptionValuse'
 import { AdminUser, CreateUserData, UpdateUserData } from '../../utils/adminApi'
 import styles from './UserModal.module.scss'
 
@@ -59,11 +63,69 @@ const UserModal: React.FC<UserModalProps> = ({
 		setLoading(true)
 		setError('')
 
+		// Валидация на фронтенде
+		if (!formData.firstName.trim()) {
+			setError('Имя обязательно для заполнения')
+			setLoading(false)
+			return
+		}
+
+		if (!formData.lastName.trim()) {
+			setError('Фамилия обязательна для заполнения')
+			setLoading(false)
+			return
+		}
+
+		if (!formData.login.trim()) {
+			setError('Логин обязателен для заполнения')
+			setLoading(false)
+			return
+		}
+
+		if (formData.login.trim().length < 3) {
+			setError('Логин должен содержать минимум 3 символа')
+			setLoading(false)
+			return
+		}
+
+		if (!formData.city.trim()) {
+			setError('Город обязателен для заполнения')
+			setLoading(false)
+			return
+		}
+
 		try {
-			await onSave(formData)
+			// Убираем лишние пробелы
+			const cleanData = {
+				...formData,
+				firstName: formData.firstName.trim(),
+				lastName: formData.lastName.trim(),
+				login: formData.login.trim(),
+				city: formData.city.trim(),
+			}
+
+			await onSave(cleanData)
 			onClose()
-		} catch {
-			setError('Ошибка сохранения пользователя')
+		} catch (error: unknown) {
+			// Улучшенная обработка ошибок
+			if (error && typeof error === 'object' && 'response' in error) {
+				const axiosError = error as {
+					response?: { data?: { message?: string | string[] } }
+				}
+				if (axiosError.response?.data?.message) {
+					if (Array.isArray(axiosError.response.data.message)) {
+						setError(axiosError.response.data.message.join(', '))
+					} else {
+						setError(axiosError.response.data.message)
+					}
+				} else {
+					setError('Ошибка сохранения пользователя')
+				}
+			} else if (error instanceof Error) {
+				setError(error.message)
+			} else {
+				setError('Ошибка сохранения пользователя')
+			}
 		} finally {
 			setLoading(false)
 		}
@@ -116,6 +178,9 @@ const UserModal: React.FC<UserModalProps> = ({
 							value={formData.login}
 							onChange={handleChange}
 							required
+							minLength={3}
+							pattern='.{3,}'
+							title='Логин должен содержать минимум 3 символа'
 							disabled={!!user} // логин нельзя менять при редактировании
 						/>
 					</div>
@@ -125,7 +190,7 @@ const UserModal: React.FC<UserModalProps> = ({
 						<select name='role' value={formData.role} onChange={handleChange}>
 							{roleNames.map(role => (
 								<option key={role} value={role}>
-									{role}
+									{roleDisplayNames[role]}
 								</option>
 							))}
 						</select>

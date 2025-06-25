@@ -93,29 +93,15 @@
 	tr:hover {
 		background: #f8f9fa;
 	}
-}
 
-.userRow {
-	&:last-child td {
+	tr:last-child td {
 		border-bottom: none;
 	}
-
-	&.roleSeparator {
-		border-top: 2px solid #e5e7eb;
-	}
 }
 
-.roleSeparator {
-	background: #f9fafb;
-
-	td {
-		border-top: 2px solid #e5e7eb;
-		font-weight: 500;
-		color: #6b7280;
-		font-size: 12px;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-	}
+.questionText {
+	max-width: 300px;
+	word-wrap: break-word;
 }
 
 .emptyMessage {
@@ -125,50 +111,11 @@
 	padding: 40px !important;
 }
 
-.role {
-	padding: 4px 8px;
-	border-radius: 12px;
-	font-size: 12px;
-	font-weight: 500;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-}
-
-.roleSuperAdmin {
-	background: #dc3545;
-	color: white;
-}
-
-.roleAdmin {
-	background: #fd7e14;
-	color: white;
-}
-
-.roleUser {
-	background: #28a745;
-	color: white;
-}
-
 .actions {
 	display: flex;
 	gap: 8px;
 	align-items: center;
 	flex-wrap: wrap;
-}
-
-.infoBtn {
-	background: #17a2b8;
-	color: white;
-	border: none;
-	padding: 6px 10px;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 12px;
-	transition: background-color 0.2s;
-
-	&:hover {
-		background: #138496;
-	}
 }
 
 .editBtn {
@@ -243,12 +190,15 @@
 		}
 	}
 
+	.questionText {
+		max-width: 150px;
+	}
+
 	.actions {
 		flex-direction: column;
 		gap: 4px;
 	}
 
-	.infoBtn,
 	.editBtn,
 	.deleteBtn {
 		width: 100%;

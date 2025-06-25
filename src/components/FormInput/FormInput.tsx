@@ -14,6 +14,7 @@ const FormInput: FC<FormInputProps> = ({
 	isPasswordVisible,
 	onTogglePasswordVisibility, // новый проп
 	value,
+	minLength,
 }) => {
 	const [inputStates, setInputStates] = useState<
 		Record<string, { hasText: boolean; touched: boolean }>
@@ -31,6 +32,7 @@ const FormInput: FC<FormInputProps> = ({
 	}
 
 	const isPasswordField = type === 'password'
+	const isLoginField = inputName === 'login'
 
 	return (
 		<fieldset className={styles.formInput__container}>
@@ -49,7 +51,7 @@ const FormInput: FC<FormInputProps> = ({
 					onBlur={handleBlur}
 					autoComplete='off'
 					required
-					minLength={2}
+					minLength={isLoginField ? 3 : minLength || 2}
 					maxLength={30}
 					{...(value !== undefined ? { value } : { defaultValue })}
 					disabled={disabled}

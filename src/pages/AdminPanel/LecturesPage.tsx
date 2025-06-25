@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import lecturesApi, { Lecture } from '../../utils/lecturesApi'
+import lecturesApi, {
+	CreateLectureData,
+	Lecture,
+	UpdateLectureData,
+} from '../../utils/lecturesApi'
+import ConfirmModal from './ConfirmModal'
+import LectureModal from './LectureModal'
 import styles from './LecturesPage.module.scss'
 
 const LecturesPage: React.FC = () => {
@@ -7,6 +13,10 @@ const LecturesPage: React.FC = () => {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState('')
 	const [searchTerm, setSearchTerm] = useState('')
+	const [isModalOpen, setIsModalOpen] = useState(false)
+	const [editingLecture, setEditingLecture] = useState<Lecture | null>(null)
+	const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+	const [lectureToDelete, setLectureToDelete] = useState<Lecture | null>(null)
 
 	useEffect(() => {
 		fetchLectures()
@@ -26,29 +36,48 @@ const LecturesPage: React.FC = () => {
 	}
 
 	const handleCreateLecture = () => {
-		// TODO: Реализовать создание лекции через модальное окно
-		console.log('Создание лекции')
+		setEditingLecture(null)
+		setIsModalOpen(true)
 	}
 
 	const handleEditLecture = (lecture: Lecture) => {
-		// TODO: Реализовать редактирование лекции через модальное окно
-		console.log('Редактирование лекции:', lecture)
+		setEditingLecture(lecture)
+		setIsModalOpen(true)
 	}
 
-	const handleDeleteLecture = async (lecture: Lecture) => {
-		if (
-			!window.confirm(
-				`Вы уверены, что хотите удалить лекцию "${lecture.title}"?`
-			)
-		) {
-			return
-		}
+	const handleDeleteLecture = (lecture: Lecture) => {
+		setLectureToDelete(lecture)
+		setIsConfirmModalOpen(true)
+	}
+
+	const confirmDeleteLecture = async () => {
+		if (!lectureToDelete) return
 
 		try {
-			await lecturesApi.deleteLecture(lecture.id)
-			await fetchLectures() // обновляем список
+			await lecturesApi.deleteLecture(lectureToDelete.id)
+			await fetchLectures()
 		} catch {
 			setError('Ошибка удаления лекции')
+		}
+	}
+
+	const handleSaveLecture = async (
+		lectureData: CreateLectureData | UpdateLectureData
+	) => {
+		try {
+			if (editingLecture) {
+				await lecturesApi.updateLecture(
+					editingLecture.id,
+					lectureData as UpdateLectureData
+				)
+			} else {
+				await lecturesApi.createLecture(lectureData as CreateLectureData)
+			}
+			await fetchLectures()
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error ? error.message : 'Ошибка сохранения лекции'
+			throw new Error(errorMessage)
 		}
 	}
 
@@ -140,6 +169,23 @@ const LecturesPage: React.FC = () => {
 					</tbody>
 				</table>
 			</div>
+
+			<LectureModal
+				isOpen={isModalOpen}
+				onClose={() => setIsModalOpen(false)}
+				lecture={editingLecture}
+				onSave={handleSaveLecture}
+			/>
+
+			<ConfirmModal
+				isOpen={isConfirmModalOpen}
+				onClose={() => setIsConfirmModalOpen(false)}
+				onConfirm={confirmDeleteLecture}
+				title='Подтверждение удаления'
+				message={`Вы уверены, что хотите удалить лекцию "${lectureToDelete?.title}"?`}
+				confirmText='Удалить'
+				cancelText='Отмена'
+			/>
 		</div>
 	)
 }

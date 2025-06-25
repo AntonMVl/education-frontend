@@ -1,0 +1,190 @@
+.modalOverlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+}
+
+.modal {
+	background: white;
+	border-radius: 8px;
+	width: 90%;
+	max-width: 600px;
+	max-height: 90vh;
+	overflow-y: auto;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modalHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 20px 24px;
+	border-bottom: 1px solid #e9ecef;
+
+	h2 {
+		margin: 0;
+		font-size: 20px;
+		font-weight: 600;
+		color: #333;
+	}
+}
+
+.closeBtn {
+	background: none;
+	border: none;
+	font-size: 24px;
+	cursor: pointer;
+	color: #6c757d;
+	padding: 0;
+	width: 30px;
+	height: 30px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	transition: background-color 0.2s;
+
+	&:hover {
+		background: #f8f9fa;
+		color: #333;
+	}
+}
+
+.form {
+	padding: 24px;
+}
+
+.error {
+	background: #f8d7da;
+	color: #721c24;
+	padding: 12px;
+	border-radius: 4px;
+	margin-bottom: 20px;
+	border: 1px solid #f5c6cb;
+	font-size: 14px;
+}
+
+.formGroup {
+	margin-bottom: 20px;
+
+	label {
+		display: block;
+		margin-bottom: 8px;
+		font-weight: 500;
+		color: #333;
+		font-size: 14px;
+	}
+
+	input,
+	textarea,
+	select {
+		width: 100%;
+		padding: 12px;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		font-size: 14px;
+		font-family: inherit;
+		transition: border-color 0.2s, box-shadow 0.2s;
+
+		&:focus {
+			outline: none;
+			border-color: #007bff;
+			box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+		}
+	}
+
+	textarea {
+		resize: vertical;
+		min-height: 100px;
+	}
+
+	select {
+		background: white;
+		cursor: pointer;
+	}
+}
+
+.formActions {
+	display: flex;
+	gap: 12px;
+	justify-content: flex-end;
+	margin-top: 24px;
+	padding-top: 20px;
+	border-top: 1px solid #e9ecef;
+}
+
+.cancelBtn {
+	background: #6c757d;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	transition: background-color 0.2s;
+
+	&:hover:not(:disabled) {
+		background: #5a6268;
+	}
+
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+}
+
+.saveBtn {
+	background: #007bff;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	transition: background-color 0.2s;
+
+	&:hover:not(:disabled) {
+		background: #0056b3;
+	}
+
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+}
+
+// Адаптивность для мобильных устройств
+@media (max-width: 768px) {
+	.modal {
+		width: 95%;
+		margin: 10px;
+	}
+
+	.modalHeader {
+		padding: 16px 20px;
+
+		h2 {
+			font-size: 18px;
+		}
+	}
+
+	.form {
+		padding: 20px;
+	}
+
+	.formActions {
+		flex-direction: column;
+		gap: 8px;
+
+		button {
+			width: 100%;
+		}
+	}
+}

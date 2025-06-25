@@ -11,6 +11,13 @@ export interface AdminUser {
 	role: string
 	status?: string
 	createdAt?: string
+	createdBy?: number
+	creator?: {
+		id: number
+		firstName: string
+		lastName: string
+		login: string
+	}
 }
 
 export interface CreateUserData {

@@ -95,7 +95,7 @@
 	}
 }
 
-.userRow {
+.adminRow {
 	&:last-child td {
 		border-bottom: none;
 	}
@@ -156,21 +156,6 @@
 	flex-wrap: wrap;
 }
 
-.infoBtn {
-	background: #17a2b8;
-	color: white;
-	border: none;
-	padding: 6px 10px;
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 12px;
-	transition: background-color 0.2s;
-
-	&:hover {
-		background: #138496;
-	}
-}
-
 .editBtn {
 	background: #ffc107;
 	color: #212529;
@@ -198,6 +183,36 @@
 
 	&:hover {
 		background: #c82333;
+	}
+}
+
+.blockBtn {
+	background: #6c757d;
+	color: white;
+	border: none;
+	padding: 6px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 12px;
+	transition: background-color 0.2s;
+
+	&:hover {
+		background: #5a6268;
+	}
+}
+
+.infoBtn {
+	background: #17a2b8;
+	color: white;
+	border: none;
+	padding: 6px 10px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 12px;
+	transition: background-color 0.2s;
+
+	&:hover {
+		background: #138496;
 	}
 }
 
@@ -248,9 +263,9 @@
 		gap: 4px;
 	}
 
-	.infoBtn,
 	.editBtn,
-	.deleteBtn {
+	.deleteBtn,
+	.blockBtn {
 		width: 100%;
 		padding: 8px;
 	}

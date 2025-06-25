@@ -1,4 +1,15 @@
-export const roleNames: string[] = ['User', 'Admin', 'SuperAdmin']
+export const roleNames: string[] = ['user', 'admin', 'superadmin']
+
+export const roleDisplayNames: { [key: string]: string } = {
+	user: 'User',
+	admin: 'Admin',
+	superadmin: 'SuperAdmin',
+}
+
+export const formatRoleForDisplay = (role: string): string => {
+	return roleDisplayNames[role.toLowerCase()] || role
+}
+
 export const cityNames: string[] = [
 	'Сыктывкар',
 	'Эжва',

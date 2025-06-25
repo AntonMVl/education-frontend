@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { roleNames } from '../../constants/DropDownOptionValuse'
+import { formatRoleForDisplay } from '../../constants/DropDownOptionValuse'
 import { RootState } from '../../store/store'
 import adminApi, {
 	AdminUser,
@@ -106,15 +106,20 @@ const UsersPage: React.FC = () => {
 		}
 	}
 
-	const handleSaveUserInfo = async (userData: UpdateUserData) => {
-		if (!selectedUser) return
-
-		await adminApi.updateUser(selectedUser.id, userData)
-		await fetchUsers()
-		const updatedUser = users.find(u => u.id === selectedUser.id)
-		if (updatedUser) {
-			setSelectedUser(updatedUser)
+	const handleSaveUserInfo = async (
+		userData: UpdateUserData
+	): Promise<AdminUser> => {
+		if (!selectedUser) {
+			throw new Error('Пользователь не выбран')
 		}
+
+		const updatedUser = await adminApi.updateUser(selectedUser.id, userData)
+		await fetchUsers()
+		// Обновляем selectedUser с данными от сервера
+		setSelectedUser(updatedUser)
+		// Переключаем модальное окно в режим просмотра
+		setInfoModalStartEditing(false)
+		return updatedUser
 	}
 
 	const filteredUsers = users.filter(
@@ -125,9 +130,39 @@ const UsersPage: React.FC = () => {
 			user.city.toLowerCase().includes(searchTerm.toLowerCase())
 	)
 
+	const sortUsersByRole = (users: AdminUser[]) => {
+		const roleOrder = { user: 1, admin: 2, superadmin: 3 }
+		return users.sort((a, b) => {
+			const roleA =
+				roleOrder[a.role.toLowerCase() as keyof typeof roleOrder] || 0
+			const roleB =
+				roleOrder[b.role.toLowerCase() as keyof typeof roleOrder] || 0
+			if (roleA !== roleB) {
+				return roleA - roleB
+			}
+			// Если роли одинаковые, сортируем по ID
+			return a.id - b.id
+		})
+	}
+
+	const sortedUsers = sortUsersByRole(filteredUsers)
+
 	const getRoleLabel = (role: string) => {
-		const found = roleNames.find(r => r.toLowerCase() === role.toLowerCase())
-		return found || role
+		return formatRoleForDisplay(role)
+	}
+
+	const getRoleStyleClass = (role: string) => {
+		const normalizedRole = role.toLowerCase()
+		switch (normalizedRole) {
+			case 'superadmin':
+				return styles.roleSuperAdmin
+			case 'admin':
+				return styles.roleAdmin
+			case 'user':
+				return styles.roleUser
+			default:
+				return styles.roleUser
+		}
 	}
 
 	const canEditUser = (user: AdminUser) => {
@@ -164,6 +199,85 @@ const UsersPage: React.FC = () => {
 		if (currentUserRole === 'admin' && targetUserRole === 'user') return true
 
 		return false
+	}
+
+	const renderUserRows = () => {
+		if (sortedUsers.length === 0) {
+			return (
+				<tr>
+					<td colSpan={8} className={styles.emptyMessage}>
+						Пользователи не найдены
+					</td>
+				</tr>
+			)
+		}
+
+		const rows: JSX.Element[] = []
+		let currentRole = ''
+		let userIndex = 0
+
+		sortedUsers.forEach(user => {
+			const userRole = user.role.toLowerCase()
+
+			// Добавляем разделитель при смене роли
+			if (userRole !== currentRole && currentRole !== '') {
+				rows.push(
+					<tr key={`separator-${userRole}`} className={styles.roleSeparator}>
+						<td colSpan={8} style={{ textAlign: 'center' }}>
+							{getRoleLabel(userRole).toUpperCase()}
+						</td>
+					</tr>
+				)
+			}
+
+			currentRole = userRole
+			userIndex++
+
+			rows.push(
+				<tr key={user.id} className={styles.userRow}>
+					<td>{userIndex}</td>
+					<td>{user.id}</td>
+					<td>{user.firstName}</td>
+					<td>{user.lastName}</td>
+					<td>{user.login}</td>
+					<td>
+						<span className={`${styles.role} ${getRoleStyleClass(user.role)}`}>
+							{getRoleLabel(user.role)}
+						</span>
+					</td>
+					<td>{user.city}</td>
+					<td>
+						<div className={styles.actions}>
+							<button
+								className={styles.infoBtn}
+								onClick={() => handleShowUserInfo(user)}
+								title='Информация о пользователе'
+							>
+								ℹ️
+							</button>
+							{canEditUser(user) && (
+								<button
+									className={styles.editBtn}
+									onClick={() => handleEditUser(user)}
+								>
+									Редактировать
+								</button>
+							)}
+							{canDeleteUser(user) && (
+								<button
+									className={styles.deleteBtn}
+									onClick={() => handleDeleteUser(user)}
+								>
+									Удалить
+								</button>
+							)}
+						</div>
+					</td>
+				</tr>
+			)
+		})
+
+		return rows
 	}
 
 	if (loading) {
@@ -205,60 +319,7 @@ const UsersPage: React.FC = () => {
 							<th>Действия</th>
 						</tr>
 					</thead>
-					<tbody>
-						{filteredUsers.length === 0 ? (
-							<tr>
-								<td colSpan={8} className={styles.emptyMessage}>
-									Пользователи не найдены
-								</td>
-							</tr>
-						) : (
-							filteredUsers.map((user, index) => (
-								<tr key={user.id} className={styles.userRow}>
-									<td>{index + 1}</td>
-									<td>{user.id}</td>
-									<td>{user.firstName}</td>
-									<td>{user.lastName}</td>
-									<td>{user.login}</td>
-									<td>
-										<span
-											className={`${styles.role} ${styles[`role${user.role}`]}`}
-										>
-											{getRoleLabel(user.role)}
-										</span>
-									</td>
-									<td>{user.city}</td>
-									<td>
-										<div className={styles.actions}>
-											<button
-												className={styles.infoBtn}
-												onClick={() => handleShowUserInfo(user)}
-												title='Информация о пользователе'
-											>
-												ℹ️
-											</button>
-											{canEditUser(user) && (
-												<button
-													className={styles.editBtn}
-													onClick={() => handleEditUser(user)}
-												>
-													Редактировать
-												</button>
-											)}
-											{canDeleteUser(user) && (
-												<button
-													className={styles.deleteBtn}
-													onClick={() => handleDeleteUser(user)}
-												>
-													Удалить
-												</button>
-											)}
-										</div>
-									</td>
-								</tr>
-							))
-						)}
-					</tbody>
+					<tbody>{renderUserRows()}</tbody>
 				</table>
 			</div>
 

@@ -1,19 +1,24 @@
 import React, { useEffect, useState } from 'react'
+import questionsApi, {
+	CreateQuestionData,
+	Question,
+	UpdateQuestionData,
+} from '../../utils/questionsApi'
+import ConfirmModal from './ConfirmModal'
+import QuestionModal from './QuestionModal'
 import styles from './QuestionsPage.module.scss'
-
-interface Question {
-	id: number
-	text: string
-	lectureId: number
-	createdAt: string
-	updatedAt: string
-}
 
 const QuestionsPage: React.FC = () => {
 	const [questions, setQuestions] = useState<Question[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState('')
 	const [searchTerm, setSearchTerm] = useState('')
+	const [isModalOpen, setIsModalOpen] = useState(false)
+	const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
+	const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+	const [questionToDelete, setQuestionToDelete] = useState<Question | null>(
+		null
+	)
 
 	useEffect(() => {
 		fetchQuestions()
@@ -22,24 +27,8 @@ const QuestionsPage: React.FC = () => {
 	const fetchQuestions = async () => {
 		try {
 			setLoading(true)
-			// TODO: Заменить на реальный API вызов
-			const mockQuestions: Question[] = [
-				{
-					id: 1,
-					text: 'Что такое обучение?',
-					lectureId: 1,
-					createdAt: '2024-01-01T00:00:00Z',
-					updatedAt: '2024-01-01T00:00:00Z',
-				},
-				{
-					id: 2,
-					text: 'Каковы правила безопасности?',
-					lectureId: 2,
-					createdAt: '2024-01-02T00:00:00Z',
-					updatedAt: '2024-01-02T00:00:00Z',
-				},
-			]
-			setQuestions(mockQuestions)
+			const data = await questionsApi.getQuestions()
+			setQuestions(data)
 			setError('')
 		} catch {
 			setError('Ошибка загрузки вопросов')
@@ -49,18 +38,49 @@ const QuestionsPage: React.FC = () => {
 	}
 
 	const handleCreateQuestion = () => {
-		// TODO: Реализовать создание вопроса
-		console.log('Создание вопроса')
+		setEditingQuestion(null)
+		setIsModalOpen(true)
 	}
 
 	const handleEditQuestion = (question: Question) => {
-		// TODO: Реализовать редактирование вопроса
-		console.log('Редактирование вопроса:', question)
+		setEditingQuestion(question)
+		setIsModalOpen(true)
 	}
 
 	const handleDeleteQuestion = (question: Question) => {
-		// TODO: Реализовать удаление вопроса
-		console.log('Удаление вопроса:', question)
+		setQuestionToDelete(question)
+		setIsConfirmModalOpen(true)
+	}
+
+	const confirmDeleteQuestion = async () => {
+		if (!questionToDelete) return
+
+		try {
+			await questionsApi.deleteQuestion(questionToDelete.id)
+			await fetchQuestions()
+		} catch {
+			setError('Ошибка удаления вопроса')
+		}
+	}
+
+	const handleSaveQuestion = async (
+		questionData: CreateQuestionData | UpdateQuestionData
+	) => {
+		try {
+			if (editingQuestion) {
+				await questionsApi.updateQuestion(
+					editingQuestion.id,
+					questionData as UpdateQuestionData
+				)
+			} else {
+				await questionsApi.createQuestion(questionData as CreateQuestionData)
+			}
+			await fetchQuestions()
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error ? error.message : 'Ошибка сохранения вопроса'
+			throw new Error(errorMessage)
+		}
 	}
 
 	const filteredQuestions = questions.filter(q =>
@@ -118,7 +138,11 @@ const QuestionsPage: React.FC = () => {
 							filteredQuestions.map(question => (
 								<tr key={question.id}>
 									<td>{question.id}</td>
-									<td>{question.text}</td>
+									<td className={styles.questionText}>
+										{question.text.length > 100
+											? `${question.text.substring(0, 100)}...`
+											: question.text}
+									</td>
 									<td>{question.lectureId}</td>
 									<td>{formatDate(question.createdAt)}</td>
 									<td>
@@ -143,6 +167,26 @@ const QuestionsPage: React.FC = () => {
 					</tbody>
 				</table>
 			</div>
+
+			<QuestionModal
+				isOpen={isModalOpen}
+				onClose={() => setIsModalOpen(false)}
+				question={editingQuestion}
+				onSave={handleSaveQuestion}
+			/>
+
+			<ConfirmModal
+				isOpen={isConfirmModalOpen}
+				onClose={() => setIsConfirmModalOpen(false)}
+				onConfirm={confirmDeleteQuestion}
+				title='Подтверждение удаления'
+				message={`Вы уверены, что хотите удалить вопрос "${questionToDelete?.text.substring(
+					0,
+					50
+				)}..."?`}
+				confirmText='Удалить'
+				cancelText='Отмена'
+			/>
 		</div>
 	)
 }

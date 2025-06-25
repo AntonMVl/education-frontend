@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { cityNames, roleNames } from '../../constants/DropDownOptionValuse'
+import {
+	cityNames,
+	roleDisplayNames,
+	roleNames,
+} from '../../constants/DropDownOptionValuse'
 import { AdminUser, UpdateUserData } from '../../utils/adminApi'
 import styles from './UserInfoModal.module.scss'
 
@@ -7,7 +11,7 @@ interface UserInfoModalProps {
 	isOpen: boolean
 	onClose: () => void
 	user: AdminUser | null
-	onSave: (userData: UpdateUserData) => Promise<void>
+	onSave: (userData: UpdateUserData) => Promise<AdminUser>
 	canEdit: boolean
 	startEditing?: boolean
 }
@@ -58,37 +62,70 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 		setFormData(prev => ({ ...prev, [name]: value }))
 	}
 
-	const handleSave = async () => {
-		if (!user) return
-
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault()
 		setLoading(true)
 		setError('')
-		setSuccess('')
+
+		// Валидация на фронтенде
+		if (!formData.firstName?.trim()) {
+			setError('Имя обязательно для заполнения')
+			setLoading(false)
+			return
+		}
+
+		if (!formData.lastName?.trim()) {
+			setError('Фамилия обязательна для заполнения')
+			setLoading(false)
+			return
+		}
+
+		if (!formData.city?.trim()) {
+			setError('Город обязателен для заполнения')
+			setLoading(false)
+			return
+		}
 
 		try {
-			// Проверяем пароль если он введен
-			if (newPassword) {
-				if (newPassword !== confirmPassword) {
-					setError('Пароли не совпадают')
-					setLoading(false)
-					return
-				}
-				if (newPassword.length < 6) {
-					setError('Пароль должен содержать минимум 6 символов')
-					setLoading(false)
-					return
-				}
-				// Добавляем пароль к данным для обновления
-				formData.password = newPassword
+			// Убираем лишние пробелы
+			const cleanData = {
+				...formData,
+				firstName: formData.firstName?.trim() || '',
+				lastName: formData.lastName?.trim() || '',
+				city: formData.city?.trim() || '',
 			}
 
-			await onSave(formData)
-			setSuccess('Данные пользователя успешно обновлены')
+			const updatedUser = await onSave(cleanData)
 			setIsEditing(false)
-			setNewPassword('')
-			setConfirmPassword('')
-		} catch (err: any) {
-			setError(err.response?.data?.message || 'Ошибка обновления пользователя')
+
+			// Обновляем состояние формы с данными от сервера
+			setFormData({
+				firstName: updatedUser.firstName,
+				lastName: updatedUser.lastName,
+				login: updatedUser.login,
+				role: updatedUser.role,
+				city: updatedUser.city,
+			})
+		} catch (error: unknown) {
+			// Улучшенная обработка ошибок
+			if (error && typeof error === 'object' && 'response' in error) {
+				const axiosError = error as {
+					response?: { data?: { message?: string | string[] } }
+				}
+				if (axiosError.response?.data?.message) {
+					if (Array.isArray(axiosError.response.data.message)) {
+						setError(axiosError.response.data.message.join(', '))
+					} else {
+						setError(axiosError.response.data.message)
+					}
+				} else {
+					setError('Ошибка сохранения пользователя')
+				}
+			} else if (error instanceof Error) {
+				setError(error.message)
+			} else {
+				setError('Ошибка сохранения пользователя')
+			}
 		} finally {
 			setLoading(false)
 		}
@@ -116,20 +153,11 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 				city: user.city,
 			})
 		}
+		// Закрываем модальное окно
+		onClose()
 	}
 
 	if (!isOpen || !user) return null
-
-	const getRoleLabel = (role: string) => {
-		switch (role) {
-			case 'admin':
-				return 'Администратор'
-			case 'superadmin':
-				return 'Суперадминистратор'
-			default:
-				return 'Пользователь'
-		}
-	}
 
 	return (
 		<div className={styles.modalOverlay} onClick={onClose}>
@@ -200,7 +228,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 								>
 									{roleNames.map(role => (
 										<option key={role} value={role}>
-											{role}
+											{roleDisplayNames[role]}
 										</option>
 									))}
 								</select>
@@ -243,6 +271,16 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 								<label>Дата регистрации:</label>
 								<span>
 									{new Date(user.createdAt).toLocaleDateString('ru-RU')}
+								</span>
+							</div>
+						)}
+
+						{user.creator && (
+							<div className={styles.infoRow}>
+								<label>Создан пользователем:</label>
+								<span>
+									{user.creator.firstName} {user.creator.lastName} (
+									{user.creator.login})
 								</span>
 							</div>
 						)}
@@ -291,7 +329,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 						<>
 							<button
 								className={styles.saveBtn}
-								onClick={handleSave}
+								onClick={handleSubmit}
 								disabled={loading}
 							>
 								{loading ? 'Сохранение...' : 'Сохранить'}

@@ -4,7 +4,11 @@ import mainIcon from '../../assets/main-icon.png'
 import Dropdown from '../../components/DropDown/DropDown'
 import FormInput from '../../components/FormInput/FormInput'
 import SignButton from '../../components/SignButton/SignButton'
-import { cityNames, roleNames } from '../../constants/DropDownOptionValuse'
+import {
+	cityNames,
+	roleDisplayNames,
+	roleNames,
+} from '../../constants/DropDownOptionValuse'
 import { ISignUpProps } from '../../types/api'
 
 import styles from './SignUp.module.scss'
@@ -34,9 +38,34 @@ const SignUp: FC<ISignUpProps> = ({ registration }) => {
 			return
 		}
 
-		console.log('Отправка формы:', formData)
-		registration(formData)
+		// Валидация логина
+		if (!formData.login.trim()) {
+			console.error('Логин обязателен для заполнения')
+			return
+		}
+
+		if (formData.login.trim().length < 3) {
+			console.error('Логин должен содержать минимум 3 символа')
+			return
+		}
+
+		// Убираем лишние пробелы
+		const cleanData = {
+			...formData,
+			firstName: formData.firstName.trim(),
+			lastName: formData.lastName.trim(),
+			login: formData.login.trim(),
+		}
+
+		console.log('Отправка формы:', cleanData)
+		registration(cleanData)
 	}
+
+	// Создаем массив опций для ролей с отображаемыми названиями
+	const roleOptions = roleNames.map(role => ({
+		value: role,
+		label: roleDisplayNames[role],
+	}))
 
 	return (
 		<section className={styles.signUp}>
@@ -72,8 +101,8 @@ const SignUp: FC<ISignUpProps> = ({ registration }) => {
 				<div className={styles.signUp__inputContainer}>
 					<Dropdown
 						name='role'
-						options={roleNames}
-						defaultValue={formData.role}
+						options={roleOptions.map(opt => opt.label)}
+						defaultValue={roleDisplayNames[formData.role]}
 						onChange={handleChange}
 					/>
 					<Dropdown
