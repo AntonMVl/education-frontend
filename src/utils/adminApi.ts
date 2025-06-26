@@ -60,9 +60,14 @@ class AdminApi {
 			})
 			console.log('Ответ getUsers:', response.data)
 			return response.data
-		} catch (error: any) {
-			console.error('Ошибка getUsers:', error.response?.data || error.message)
-			console.error('Статус:', error.response?.status)
+		} catch (error: unknown) {
+			console.error(
+				'Ошибка getUsers:',
+				error instanceof Error ? error.message : error
+			)
+			if (axios.isAxiosError(error)) {
+				console.error('Статус:', error.response?.status)
+			}
 			throw error
 		}
 	}
@@ -78,9 +83,14 @@ class AdminApi {
 			})
 			console.log('Ответ createUser:', response.data)
 			return response.data
-		} catch (error: any) {
-			console.error('Ошибка createUser:', error.response?.data || error.message)
-			console.error('Статус:', error.response?.status)
+		} catch (error: unknown) {
+			console.error(
+				'Ошибка createUser:',
+				error instanceof Error ? error.message : error
+			)
+			if (axios.isAxiosError(error)) {
+				console.error('Статус:', error.response?.status)
+			}
 			throw error
 		}
 	}
@@ -89,7 +99,7 @@ class AdminApi {
 	async updateUser(id: number, userData: UpdateUserData): Promise<AdminUser> {
 		try {
 			console.log('Обновление пользователя:', id, userData)
-			const response = await axios.put(
+			const response = await axios.patch(
 				`${this._url}/admin/users/${id}`,
 				userData,
 				{
@@ -98,9 +108,14 @@ class AdminApi {
 			)
 			console.log('Ответ updateUser:', response.data)
 			return response.data
-		} catch (error: any) {
-			console.error('Ошибка updateUser:', error.response?.data || error.message)
-			console.error('Статус:', error.response?.status)
+		} catch (error: unknown) {
+			console.error(
+				'Ошибка updateUser:',
+				error instanceof Error ? error.message : error
+			)
+			if (axios.isAxiosError(error)) {
+				console.error('Статус:', error.response?.status)
+			}
 			throw error
 		}
 	}
@@ -113,9 +128,14 @@ class AdminApi {
 				headers: this.getAuthHeaders(),
 			})
 			console.log('Пользователь успешно удален')
-		} catch (error: any) {
-			console.error('Ошибка deleteUser:', error.response?.data || error.message)
-			console.error('Статус:', error.response?.status)
+		} catch (error: unknown) {
+			console.error(
+				'Ошибка deleteUser:',
+				error instanceof Error ? error.message : error
+			)
+			if (axios.isAxiosError(error)) {
+				console.error('Статус:', error.response?.status)
+			}
 			throw error
 		}
 	}
@@ -136,18 +156,20 @@ class AdminApi {
 			)
 			console.log('Ответ toggleUserStatus:', response.data)
 			return response.data
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error(
 				'Ошибка toggleUserStatus:',
-				error.response?.data || error.message
+				error instanceof Error ? error.message : error
 			)
-			console.error('Статус:', error.response?.status)
+			if (axios.isAxiosError(error)) {
+				console.error('Статус:', error.response?.status)
+			}
 			throw error
 		}
 	}
 
 	// Получение статистики
-	async getStats(): Promise<any> {
+	async getStats(): Promise<Record<string, unknown>> {
 		try {
 			console.log('Запрос статистики:', `${this._url}/admin/stats`)
 			const response = await axios.get(`${this._url}/admin/stats`, {
@@ -155,9 +177,14 @@ class AdminApi {
 			})
 			console.log('Ответ getStats:', response.data)
 			return response.data
-		} catch (error: any) {
-			console.error('Ошибка getStats:', error.response?.data || error.message)
-			console.error('Статус:', error.response?.status)
+		} catch (error: unknown) {
+			console.error(
+				'Ошибка getStats:',
+				error instanceof Error ? error.message : error
+			)
+			if (axios.isAxiosError(error)) {
+				console.error('Статус:', error.response?.status)
+			}
 			throw error
 		}
 	}

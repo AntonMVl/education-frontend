@@ -1,301 +1,128 @@
 import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { formatRoleForDisplay } from '../../constants/DropDownOptionValuse'
-import { RootState } from '../../store/store'
-import { AdminUser } from '../../utils/adminApi'
-import adminsApi, {
-	Admin,
-	CreateAdminData,
-	UpdateAdminData,
-} from '../../utils/adminsApi'
+import adminApi from '../../api/adminApi'
+import AdminPermissionsEdit from '../../components/AdminPermissionsEdit/AdminPermissionsEdit'
+import AdminPermissionsInfo from '../../components/AdminPermissionsInfo/AdminPermissionsInfo'
+import PermissionErrorModal from '../../components/PermissionErrorModal/PermissionErrorModal'
+import { usePermissions } from '../../hooks/usePermissions'
+import {
+	AdminPermissionsResponse,
+	AdminWithPermissions,
+	Permission,
+	Permission as PermissionType,
+} from '../../types/permissions'
 import styles from './AdminsPage.module.scss'
-import ConfirmModal from './ConfirmModal'
-import PasswordModal from './PasswordModal'
-import UserInfoModal from './UserInfoModal'
-import UserModal from './UserModal'
 
 const AdminsPage: React.FC = () => {
-	const [admins, setAdmins] = useState<Admin[]>([])
-	const [searchTerm, setSearchTerm] = useState('')
+	const [admins, setAdmins] = useState<AdminWithPermissions[]>([])
 	const [loading, setLoading] = useState(true)
-	const [error, setError] = useState('')
-	const [isModalOpen, setIsModalOpen] = useState(false)
-	const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null)
-	const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
-	const [adminToDelete, setAdminToDelete] = useState<Admin | null>(null)
-	const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
-	const [tempPassword, setTempPassword] = useState('')
-	const [tempAdminLogin, setTempAdminLogin] = useState('')
-	const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
-	const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null)
+	const [error, setError] = useState<string | null>(null)
+	const [searchTerm, setSearchTerm] = useState('')
+	const [selectedRole, setSelectedRole] = useState<string>('all')
 
-	const currentUser = useSelector((state: RootState) => state.user.user)
+	// Модальные окна
+	const [permissionsInfo, setPermissionsInfo] =
+		useState<AdminPermissionsResponse | null>(null)
+	const [permissionsEdit, setPermissionsEdit] =
+		useState<AdminPermissionsResponse | null>(null)
+	const [isEditLoading, setIsEditLoading] = useState(false)
+
+	// Модальное окно ошибки прав
+	const [permissionError, setPermissionError] = useState<{
+		isOpen: boolean
+		action: string
+	}>({
+		isOpen: false,
+		action: '',
+	})
+
+	const { hasPermission } = usePermissions()
 
 	useEffect(() => {
-		fetchAdmins()
+		loadAdmins()
 	}, [])
 
-	const fetchAdmins = async () => {
+	const loadAdmins = async () => {
 		try {
 			setLoading(true)
-			const data = await adminsApi.getAdmins()
+			setError(null)
+			const data = await adminApi.getAllAdmins()
 			setAdmins(data)
-			setError('')
-		} catch {
-			setError('Ошибка загрузки администраторов')
+		} catch (err) {
+			setError('Ошибка при загрузке администраторов')
+			console.error('Error loading admins:', err)
 		} finally {
 			setLoading(false)
 		}
 	}
 
-	const handleCreateAdmin = () => {
-		setEditingAdmin(null)
-		setIsModalOpen(true)
-	}
-
-	const handleEditAdmin = (admin: Admin) => {
-		setEditingAdmin(admin)
-		setIsModalOpen(true)
-	}
-
-	const handleShowAdminInfo = (admin: Admin) => {
-		setSelectedAdmin(admin)
-		setIsInfoModalOpen(true)
-	}
-
-	const handleDeleteAdmin = (admin: Admin) => {
-		if (!canDeleteAdmin(admin)) {
-			setError('У вас нет прав для удаления этого администратора')
-			return
-		}
-		setAdminToDelete(admin)
-		setIsConfirmModalOpen(true)
-	}
-
-	const confirmDeleteAdmin = async () => {
-		if (!adminToDelete) return
-
+	const handleViewPermissions = async (adminId: number) => {
 		try {
-			await adminsApi.deleteAdmin(adminToDelete.id)
-			await fetchAdmins()
-		} catch {
-			setError('Ошибка удаления администратора')
+			const data = await adminApi.getAdminPermissions(adminId)
+			setPermissionsInfo(data)
+		} catch (err) {
+			setError('Ошибка при загрузке прав администратора')
+			console.error('Error loading admin permissions:', err)
 		}
 	}
 
-	const handleSaveAdmin = async (
-		adminData: CreateAdminData | UpdateAdminData
-	) => {
-		try {
-			if (editingAdmin) {
-				await adminsApi.updateAdmin(
-					editingAdmin.id,
-					adminData as UpdateAdminData
-				)
-			} else {
-				const result = await adminsApi.createAdmin(adminData as CreateAdminData)
-				// Показываем временный пароль
-				setTempPassword(result.plainPassword)
-				setTempAdminLogin(result.admin.login)
-				setIsPasswordModalOpen(true)
-			}
-			await fetchAdmins()
-		} catch (error: unknown) {
-			const errorMessage =
-				error instanceof Error
-					? error.message
-					: 'Ошибка сохранения администратора'
-			setError(errorMessage)
-		}
-	}
-
-	const handleBlockAdmin = async (admin: Admin) => {
-		if (!canBlockAdmin(admin)) {
-			setError('У вас нет прав для блокировки этого администратора')
+	const handleEditPermissions = async (adminId: number) => {
+		if (!hasPermission(Permission.MANAGE_ADMINS)) {
+			setPermissionError({
+				isOpen: true,
+				action: 'редактировать права администраторов',
+			})
 			return
 		}
 
 		try {
-			await adminsApi.blockAdmin(admin.id)
-			await fetchAdmins()
-		} catch {
-			setError('Ошибка блокировки администратора')
+			const data = await adminApi.getAdminPermissions(adminId)
+			setPermissionsEdit(data)
+		} catch (err) {
+			setError('Ошибка при загрузке прав администратора')
+			console.error('Error loading admin permissions:', err)
 		}
 	}
 
-	const filteredAdmins = admins.filter(
-		admin =>
+	const handleSavePermissions = async (permissions: PermissionType[]) => {
+		if (!permissionsEdit) return
+
+		if (!hasPermission(Permission.MANAGE_ADMINS)) {
+			setPermissionError({
+				isOpen: true,
+				action: 'сохранять права администраторов',
+			})
+			return
+		}
+
+		try {
+			setIsEditLoading(true)
+			await adminApi.updateAdminPermissions(
+				permissionsEdit.admin.id,
+				permissions
+			)
+			setPermissionsEdit(null)
+			loadAdmins() // Перезагружаем список для обновления данных
+		} catch (err) {
+			setError('Ошибка при сохранении прав администратора')
+			console.error('Error saving admin permissions:', err)
+		} finally {
+			setIsEditLoading(false)
+		}
+	}
+
+	const filteredAdmins = admins.filter(admin => {
+		const matchesSearch =
 			admin.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
 			admin.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			admin.login.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			admin.city.toLowerCase().includes(searchTerm.toLowerCase())
-	)
+			admin.login.toLowerCase().includes(searchTerm.toLowerCase())
 
-	const sortAdminsByRole = (admins: Admin[]) => {
-		const roleOrder = { user: 1, admin: 2, superadmin: 3 }
-		return admins.sort((a, b) => {
-			const roleA =
-				roleOrder[a.role.toLowerCase() as keyof typeof roleOrder] || 0
-			const roleB =
-				roleOrder[b.role.toLowerCase() as keyof typeof roleOrder] || 0
-			if (roleA !== roleB) {
-				return roleA - roleB
-			}
-			// Если роли одинаковые, сортируем по ID
-			return a.id - b.id
-		})
-	}
+		const matchesRole = selectedRole === 'all' || admin.role === selectedRole
 
-	const sortedAdmins = sortAdminsByRole(filteredAdmins)
+		return matchesSearch && matchesRole
+	})
 
-	const getRoleLabel = (role: string) => {
-		return formatRoleForDisplay(role)
-	}
-
-	const getRoleStyleClass = (role: string) => {
-		const normalizedRole = role.toLowerCase()
-		switch (normalizedRole) {
-			case 'superadmin':
-				return styles.roleSuperAdmin
-			case 'admin':
-				return styles.roleAdmin
-			case 'user':
-				return styles.roleUser
-			default:
-				return styles.roleUser
-		}
-	}
-
-	const canEditAdmin = (admin: Admin) => {
-		if (!currentUser) return false
-
-		// Пользователь не может редактировать сам себя
-		if (currentUser.id === admin.id) return false
-
-		const currentUserRole = currentUser.role?.toLowerCase()
-
-		// Суперадмин может редактировать всех (кроме себя)
-		if (currentUserRole === 'superadmin') return true
-
-		// Админ не может редактировать других админов
-		return false
-	}
-
-	const canDeleteAdmin = (admin: Admin) => {
-		if (!currentUser) return false
-
-		// Пользователь не может удалить сам себя
-		if (currentUser.id === admin.id) return false
-
-		const currentUserRole = currentUser.role?.toLowerCase()
-
-		// Суперадмин может удалять всех (кроме себя)
-		if (currentUserRole === 'superadmin') return true
-
-		// Админ не может удалять других админов
-		return false
-	}
-
-	const canBlockAdmin = (admin: Admin) => {
-		if (!currentUser) return false
-
-		// Пользователь не может заблокировать сам себя
-		if (currentUser.id === admin.id) return false
-
-		const currentUserRole = currentUser.role?.toLowerCase()
-
-		// Суперадмин может блокировать всех (кроме себя)
-		if (currentUserRole === 'superadmin') return true
-
-		// Админ не может блокировать других админов
-		return false
-	}
-
-	const renderAdminRows = () => {
-		if (sortedAdmins.length === 0) {
-			return (
-				<tr>
-					<td colSpan={8} className={styles.emptyMessage}>
-						Администраторы не найдены
-					</td>
-				</tr>
-			)
-		}
-
-		const rows: JSX.Element[] = []
-		let currentRole = ''
-		let adminIndex = 0
-
-		sortedAdmins.forEach(admin => {
-			const adminRole = admin.role.toLowerCase()
-
-			// Добавляем разделитель при смене роли
-			if (adminRole !== currentRole && currentRole !== '') {
-				rows.push(
-					<tr key={`separator-${adminRole}`} className={styles.roleSeparator}>
-						<td colSpan={8} style={{ textAlign: 'center' }}>
-							{getRoleLabel(adminRole).toUpperCase()}
-						</td>
-					</tr>
-				)
-			}
-
-			currentRole = adminRole
-			adminIndex++
-
-			rows.push(
-				<tr key={admin.id} className={styles.adminRow}>
-					<td>{adminIndex}</td>
-					<td>{admin.id}</td>
-					<td>{admin.firstName}</td>
-					<td>{admin.lastName}</td>
-					<td>{admin.login}</td>
-					<td>
-						<span className={`${styles.role} ${getRoleStyleClass(admin.role)}`}>
-							{getRoleLabel(admin.role)}
-						</span>
-					</td>
-					<td>{admin.city}</td>
-					<td>
-						<div className={styles.actions}>
-							{canEditAdmin(admin) && (
-								<button
-									className={styles.editBtn}
-									onClick={() => handleEditAdmin(admin)}
-								>
-									Редактировать
-								</button>
-							)}
-							{canDeleteAdmin(admin) && (
-								<button
-									className={styles.deleteBtn}
-									onClick={() => handleDeleteAdmin(admin)}
-								>
-									Удалить
-								</button>
-							)}
-							{canBlockAdmin(admin) && (
-								<button
-									className={styles.blockBtn}
-									onClick={() => handleBlockAdmin(admin)}
-								>
-									Заблокировать
-								</button>
-							)}
-							<button
-								className={styles.infoBtn}
-								onClick={() => handleShowAdminInfo(admin)}
-								title='Информация об администраторе'
-							>
-								ℹ️
-							</button>
-						</div>
-					</td>
-				</tr>
-			)
-		})
-
-		return rows
+	const formatDate = (dateString: string) => {
+		return new Date(dateString).toLocaleDateString('ru-RU')
 	}
 
 	if (loading) {
@@ -303,78 +130,133 @@ const AdminsPage: React.FC = () => {
 	}
 
 	return (
-		<div className={styles.container}>
+		<div className={styles.adminsPage}>
 			<div className={styles.header}>
 				<h1>Управление администраторами</h1>
-				<button className={styles.createBtn} onClick={handleCreateAdmin}>
-					Создать администратора
-				</button>
+				<p>Просмотр и управление правами администраторов системы</p>
 			</div>
 
-			{error && <div className={styles.error}>{error}</div>}
+			{error && (
+				<div className={styles.error}>
+					{error}
+					<button onClick={() => setError(null)}>×</button>
+				</div>
+			)}
 
-			<div className={styles.searchContainer}>
-				<input
-					type='text'
-					placeholder='Поиск администраторов...'
-					value={searchTerm}
-					onChange={e => setSearchTerm(e.target.value)}
-					className={styles.searchInput}
-				/>
+			<div className={styles.filters}>
+				<div className={styles.searchContainer}>
+					<input
+						type='text'
+						placeholder='Поиск по имени, фамилии или логину...'
+						value={searchTerm}
+						onChange={e => setSearchTerm(e.target.value)}
+						className={styles.searchInput}
+					/>
+				</div>
+
+				<div className={styles.roleFilter}>
+					<select
+						value={selectedRole}
+						onChange={e => setSelectedRole(e.target.value)}
+						className={styles.roleSelect}
+					>
+						<option value='all'>Все роли</option>
+						<option value='admin'>Администраторы</option>
+						<option value='superadmin'>Суперадминистраторы</option>
+					</select>
+				</div>
 			</div>
 
 			<div className={styles.tableContainer}>
-				<table className={styles.table}>
+				<table className={styles.adminsTable}>
 					<thead>
 						<tr>
-							<th>№</th>
 							<th>ID</th>
 							<th>Имя</th>
 							<th>Фамилия</th>
 							<th>Логин</th>
 							<th>Роль</th>
 							<th>Город</th>
+							<th>Дата регистрации</th>
+							<th>Количество прав</th>
 							<th>Действия</th>
 						</tr>
 					</thead>
-					<tbody>{renderAdminRows()}</tbody>
+					<tbody>
+						{filteredAdmins.map(admin => (
+							<tr key={admin.id}>
+								<td>{admin.id}</td>
+								<td>{admin.firstName}</td>
+								<td>{admin.lastName}</td>
+								<td>{admin.login}</td>
+								<td>
+									<span className={`${styles.role} ${styles[admin.role]}`}>
+										{admin.role === 'superadmin'
+											? 'Суперадминистратор'
+											: 'Администратор'}
+									</span>
+								</td>
+								<td>{admin.city}</td>
+								<td>{formatDate(admin.createdAt)}</td>
+								<td>
+									<span className={styles.permissionsCount}>
+										{admin.permissions.length} прав
+									</span>
+								</td>
+								<td>
+									<div className={styles.actions}>
+										<button
+											className={styles.actionButton}
+											onClick={() => handleViewPermissions(admin.id)}
+											title='Просмотр прав'
+										>
+											Информация
+										</button>
+										<button
+											className={`${styles.actionButton} ${styles.editButton}`}
+											onClick={() => handleEditPermissions(admin.id)}
+											title='Редактировать права'
+										>
+											Редактировать
+										</button>
+									</div>
+								</td>
+							</tr>
+						))}
+					</tbody>
 				</table>
+
+				{filteredAdmins.length === 0 && (
+					<div className={styles.noData}>
+						{searchTerm || selectedRole !== 'all'
+							? 'Администраторы не найдены'
+							: 'Администраторы не найдены'}
+					</div>
+				)}
 			</div>
 
-			<UserModal
-				isOpen={isModalOpen}
-				onClose={() => setIsModalOpen(false)}
-				user={editingAdmin}
-				onSave={handleSaveAdmin}
-			/>
+			{/* Модальные окна */}
+			{permissionsInfo && (
+				<AdminPermissionsInfo
+					data={permissionsInfo}
+					onClose={() => setPermissionsInfo(null)}
+				/>
+			)}
 
-			<UserInfoModal
-				isOpen={isInfoModalOpen}
-				onClose={() => setIsInfoModalOpen(false)}
-				user={selectedAdmin}
-				onSave={async () => {
-					// Для админов редактирование через это модальное окно не поддерживается
-					return selectedAdmin as AdminUser
-				}}
-				canEdit={false}
-				startEditing={false}
-			/>
+			{permissionsEdit && (
+				<AdminPermissionsEdit
+					data={permissionsEdit}
+					onSave={handleSavePermissions}
+					onClose={() => setPermissionsEdit(null)}
+					isLoading={isEditLoading}
+				/>
+			)}
 
-			<PasswordModal
-				isOpen={isPasswordModalOpen}
-				onClose={() => setIsPasswordModalOpen(false)}
-				plainPassword={tempPassword}
-				userLogin={tempAdminLogin}
-			/>
-
-			<ConfirmModal
-				isOpen={isConfirmModalOpen}
-				onClose={() => setIsConfirmModalOpen(false)}
-				onConfirm={confirmDeleteAdmin}
-				title='Подтверждение удаления'
-				message={`Вы уверены, что хотите удалить администратора "${adminToDelete?.firstName} ${adminToDelete?.lastName}"?`}
-				confirmText='Удалить'
-				cancelText='Отмена'
+			{/* Модальное окно ошибки прав */}
+			<PermissionErrorModal
+				isOpen={permissionError.isOpen}
+				onClose={() => setPermissionError({ isOpen: false, action: '' })}
+				action={permissionError.action}
 			/>
 		</div>
 	)

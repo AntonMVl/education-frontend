@@ -6,6 +6,7 @@ import FormInput from '../../components/FormInput/FormInput'
 import SignButton from '../../components/SignButton/SignButton'
 import {
 	cityNames,
+	Role,
 	roleDisplayNames,
 	roleNames,
 } from '../../constants/DropDownOptionValuse'
@@ -18,7 +19,7 @@ const SignUp: FC<ISignUpProps> = ({ registration }) => {
 		firstName: '',
 		lastName: '',
 		login: '',
-		role: roleNames[0], // ✅ По умолчанию ставим первую роль
+		role: roleNames[0] as Role, // ✅ По умолчанию ставим первую роль
 		city: cityNames[0], // ✅ По умолчанию ставим первый город
 	})
 
@@ -26,7 +27,17 @@ const SignUp: FC<ISignUpProps> = ({ registration }) => {
 		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
 	) => {
 		const { name, value } = e.target
-		setFormData(prevState => ({ ...prevState, [name]: value }))
+
+		// Для роли нужно найти соответствующее значение по отображаемому названию
+		if (name === 'role') {
+			const roleValue =
+				(Object.entries(roleDisplayNames).find(
+					([, displayName]) => displayName === value
+				)?.[0] as Role) || value
+			setFormData(prevState => ({ ...prevState, [name]: roleValue }))
+		} else {
+			setFormData(prevState => ({ ...prevState, [name]: value }))
+		}
 	}
 
 	const handleSubmit = (e: React.FormEvent) => {

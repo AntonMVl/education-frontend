@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { formatRoleForDisplay } from '../../constants/DropDownOptionValuse'
+import PermissionErrorModal from '../../components/PermissionErrorModal/PermissionErrorModal'
+import {
+	getRoleDisplayName,
+	normalizeRoleValue,
+} from '../../constants/DropDownOptionValuse'
 import { RootState } from '../../store/store'
-import adminApi, {
-	AdminUser,
-	CreateUserData,
-	UpdateUserData,
-} from '../../utils/adminApi'
+import adminApi, { AdminUser, UpdateUserData } from '../../utils/adminApi'
 import ConfirmModal from './ConfirmModal'
-import PasswordModal from './PasswordModal'
 import UserInfoModal from './UserInfoModal'
 import UserModal from './UserModal'
 import styles from './UsersPage.module.scss'
@@ -25,11 +24,30 @@ const UsersPage: React.FC = () => {
 	const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
 	const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null)
 	const [infoModalStartEditing, setInfoModalStartEditing] = useState(false)
-	const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
-	const [tempPassword, setTempPassword] = useState('')
-	const [tempUserLogin, setTempUserLogin] = useState('')
+
+	// Модальное окно ошибки прав
+	const [permissionError, setPermissionError] = useState<{
+		isOpen: boolean
+		action: string
+	}>({
+		isOpen: false,
+		action: '',
+	})
 
 	const currentUser = useSelector((state: RootState) => state.user.user)
+
+	// Определяем права текущего пользователя
+	const canCreateUsers =
+		currentUser?.role === 'superadmin' ||
+		currentUser?.permissions?.includes('create_users')
+
+	const canEditUsers =
+		currentUser?.role === 'superadmin' ||
+		currentUser?.permissions?.includes('edit_users')
+
+	const canDeleteUsers =
+		currentUser?.role === 'superadmin' ||
+		currentUser?.permissions?.includes('delete_users')
 
 	useEffect(() => {
 		fetchUsers()
@@ -49,11 +67,25 @@ const UsersPage: React.FC = () => {
 	}
 
 	const handleCreateUser = () => {
+		if (!canCreateUsers) {
+			setPermissionError({
+				isOpen: true,
+				action: 'создавать пользователей',
+			})
+			return
+		}
 		setEditingUser(null)
 		setIsModalOpen(true)
 	}
 
 	const handleEditUser = (user: AdminUser) => {
+		if (!canEditUsers) {
+			setPermissionError({
+				isOpen: true,
+				action: 'редактировать пользователей',
+			})
+			return
+		}
 		setSelectedUser(user)
 		setIsInfoModalOpen(true)
 		setInfoModalStartEditing(true)
@@ -66,6 +98,14 @@ const UsersPage: React.FC = () => {
 	}
 
 	const handleDeleteUser = (user: AdminUser) => {
+		if (!canDeleteUsers) {
+			setPermissionError({
+				isOpen: true,
+				action: 'удалять пользователей',
+			})
+			return
+		}
+
 		if (!canDeleteUser(user)) {
 			setError('У вас нет прав для удаления этого пользователя')
 			return
@@ -85,32 +125,19 @@ const UsersPage: React.FC = () => {
 		}
 	}
 
-	const handleSaveUser = async (userData: CreateUserData | UpdateUserData) => {
-		try {
-			if (editingUser) {
-				await adminApi.updateUser(editingUser.id, userData as UpdateUserData)
-			} else {
-				const result = await adminApi.createUser(userData as CreateUserData)
-				// Показываем временный пароль
-				setTempPassword(result.plainPassword)
-				setTempUserLogin(result.user.login)
-				setIsPasswordModalOpen(true)
-			}
-			await fetchUsers()
-		} catch (error: unknown) {
-			const errorMessage =
-				error instanceof Error
-					? error.message
-					: 'Ошибка сохранения пользователя'
-			setError(errorMessage)
-		}
-	}
-
 	const handleSaveUserInfo = async (
 		userData: UpdateUserData
 	): Promise<AdminUser> => {
 		if (!selectedUser) {
 			throw new Error('Пользователь не выбран')
+		}
+
+		if (!canEditUsers) {
+			setPermissionError({
+				isOpen: true,
+				action: 'редактировать пользователей',
+			})
+			throw new Error('Недостаточно прав')
 		}
 
 		const updatedUser = await adminApi.updateUser(selectedUser.id, userData)
@@ -122,6 +149,7 @@ const UsersPage: React.FC = () => {
 		return updatedUser
 	}
 
+	// Фильтрация пользователей
 	const filteredUsers = users.filter(
 		user =>
 			user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -148,7 +176,7 @@ const UsersPage: React.FC = () => {
 	const sortedUsers = sortUsersByRole(filteredUsers)
 
 	const getRoleLabel = (role: string) => {
-		return formatRoleForDisplay(role)
+		return normalizeRoleValue(role)
 	}
 
 	const getRoleStyleClass = (role: string) => {
@@ -242,10 +270,15 @@ const UsersPage: React.FC = () => {
 					<td>{user.login}</td>
 					<td>
 						<span className={`${styles.role} ${getRoleStyleClass(user.role)}`}>
-							{getRoleLabel(user.role)}
+							{getRoleDisplayName(user.role)}
 						</span>
 					</td>
 					<td>{user.city}</td>
+					<td>
+						{user.createdAt
+							? new Date(user.createdAt).toLocaleDateString('ru-RU')
+							: '-'}
+					</td>
 					<td>
 						<div className={styles.actions}>
 							<button
@@ -288,9 +321,11 @@ const UsersPage: React.FC = () => {
 		<div className={styles.container}>
 			<div className={styles.header}>
 				<h1>Управление пользователями</h1>
-				<button className={styles.createBtn} onClick={handleCreateUser}>
-					Создать пользователя
-				</button>
+				{canCreateUsers && (
+					<button className={styles.createBtn} onClick={handleCreateUser}>
+						Создать пользователя
+					</button>
+				)}
 			</div>
 
 			{error && <div className={styles.error}>{error}</div>}
@@ -316,6 +351,7 @@ const UsersPage: React.FC = () => {
 							<th>Логин</th>
 							<th>Роль</th>
 							<th>Город</th>
+							<th>Дата создания</th>
 							<th>Действия</th>
 						</tr>
 					</thead>
@@ -327,23 +363,16 @@ const UsersPage: React.FC = () => {
 				isOpen={isModalOpen}
 				onClose={() => setIsModalOpen(false)}
 				user={editingUser}
-				onSave={handleSaveUser}
+				onSuccess={fetchUsers}
 			/>
 
 			<UserInfoModal
 				isOpen={isInfoModalOpen}
 				onClose={() => setIsInfoModalOpen(false)}
 				user={selectedUser}
-				onSave={handleSaveUserInfo}
-				canEdit={selectedUser ? canEditUser(selectedUser) : false}
 				startEditing={infoModalStartEditing}
-			/>
-
-			<PasswordModal
-				isOpen={isPasswordModalOpen}
-				onClose={() => setIsPasswordModalOpen(false)}
-				plainPassword={tempPassword}
-				userLogin={tempUserLogin}
+				onSave={handleSaveUserInfo}
+				canEdit={true}
 			/>
 
 			<ConfirmModal
@@ -354,6 +383,12 @@ const UsersPage: React.FC = () => {
 				message={`Вы уверены, что хотите удалить пользователя "${userToDelete?.firstName} ${userToDelete?.lastName}"?`}
 				confirmText='Удалить'
 				cancelText='Отмена'
+			/>
+
+			<PermissionErrorModal
+				isOpen={permissionError.isOpen}
+				onClose={() => setPermissionError({ isOpen: false, action: '' })}
+				action={permissionError.action}
 			/>
 		</div>
 	)

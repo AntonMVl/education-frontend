@@ -7,11 +7,13 @@ import { IHeaderProps } from '../../types/HeaderTypes'
 import styles from './header.module.scss'
 
 export const Header: FC<IHeaderProps> = ({ loggedIn, signOut }) => {
-	const currentUser = useSelector((state: RootState) => state.user.user)
+	const user = useSelector((state: RootState) => state.user.user)
+
+	// Проверяем, является ли пользователь администратором или суперадминистратором
 	const isAdmin =
-		currentUser &&
-		(currentUser.role?.toLowerCase() === 'admin' ||
-			currentUser.role?.toLowerCase() === 'superadmin')
+		user?.role?.toLowerCase() === 'admin' ||
+		user?.role?.toLowerCase() === 'superadmin'
+
 	return (
 		<section className={styles.header}>
 			<Link to='/' className={styles.header__button}>
@@ -29,7 +31,7 @@ export const Header: FC<IHeaderProps> = ({ loggedIn, signOut }) => {
 						</Link>
 						{isAdmin && (
 							<Link className={styles.header__link} to='/admin'>
-								Админка
+								Админ панель
 							</Link>
 						)}
 						<button className={styles.header__buttonLink} onClick={signOut}>

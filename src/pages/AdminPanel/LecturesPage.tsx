@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from 'react'
+import PermissionErrorModal from '../../components/PermissionErrorModal/PermissionErrorModal'
+import { usePermissions } from '../../hooks/usePermissions'
+import { Permission } from '../../types/permissions'
 import lecturesApi, {
 	CreateLectureData,
 	Lecture,
@@ -18,6 +21,17 @@ const LecturesPage: React.FC = () => {
 	const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
 	const [lectureToDelete, setLectureToDelete] = useState<Lecture | null>(null)
 
+	// Модальное окно ошибки прав
+	const [permissionError, setPermissionError] = useState<{
+		isOpen: boolean
+		action: string
+	}>({
+		isOpen: false,
+		action: '',
+	})
+
+	const { hasPermission } = usePermissions()
+
 	useEffect(() => {
 		fetchLectures()
 	}, [])
@@ -36,16 +50,37 @@ const LecturesPage: React.FC = () => {
 	}
 
 	const handleCreateLecture = () => {
+		if (!hasPermission(Permission.MANAGE_LECTURES)) {
+			setPermissionError({
+				isOpen: true,
+				action: 'создавать лекции',
+			})
+			return
+		}
 		setEditingLecture(null)
 		setIsModalOpen(true)
 	}
 
 	const handleEditLecture = (lecture: Lecture) => {
+		if (!hasPermission(Permission.MANAGE_LECTURES)) {
+			setPermissionError({
+				isOpen: true,
+				action: 'редактировать лекции',
+			})
+			return
+		}
 		setEditingLecture(lecture)
 		setIsModalOpen(true)
 	}
 
 	const handleDeleteLecture = (lecture: Lecture) => {
+		if (!hasPermission(Permission.MANAGE_LECTURES)) {
+			setPermissionError({
+				isOpen: true,
+				action: 'удалять лекции',
+			})
+			return
+		}
 		setLectureToDelete(lecture)
 		setIsConfirmModalOpen(true)
 	}
@@ -66,11 +101,25 @@ const LecturesPage: React.FC = () => {
 	) => {
 		try {
 			if (editingLecture) {
+				if (!hasPermission(Permission.MANAGE_LECTURES)) {
+					setPermissionError({
+						isOpen: true,
+						action: 'редактировать лекции',
+					})
+					return
+				}
 				await lecturesApi.updateLecture(
 					editingLecture.id,
 					lectureData as UpdateLectureData
 				)
 			} else {
+				if (!hasPermission(Permission.MANAGE_LECTURES)) {
+					setPermissionError({
+						isOpen: true,
+						action: 'создавать лекции',
+					})
+					return
+				}
 				await lecturesApi.createLecture(lectureData as CreateLectureData)
 			}
 			await fetchLectures()
@@ -185,6 +234,13 @@ const LecturesPage: React.FC = () => {
 				message={`Вы уверены, что хотите удалить лекцию "${lectureToDelete?.title}"?`}
 				confirmText='Удалить'
 				cancelText='Отмена'
+			/>
+
+			{/* Модальное окно ошибки прав */}
+			<PermissionErrorModal
+				isOpen={permissionError.isOpen}
+				onClose={() => setPermissionError({ isOpen: false, action: '' })}
+				action={permissionError.action}
 			/>
 		</div>
 	)

@@ -1,13 +1,21 @@
-export const roleNames: string[] = ['user', 'admin', 'superadmin']
+export const roleNames = ['user', 'admin', 'superadmin'] as const
+export type Role = (typeof roleNames)[number]
 
-export const roleDisplayNames: { [key: string]: string } = {
+export const roleDisplayNames: Record<Role, string> = {
 	user: 'User',
 	admin: 'Admin',
-	superadmin: 'SuperAdmin',
+	superadmin: 'Superadmin',
 }
 
-export const formatRoleForDisplay = (role: string): string => {
-	return roleDisplayNames[role.toLowerCase()] || role
+export function getRoleDisplayName(role: string): string {
+	const normalized = role?.toLowerCase()
+	return roleDisplayNames[normalized as Role] || role
+}
+
+export function normalizeRoleValue(role: string): Role {
+	const normalized = role?.toLowerCase()
+	if (roleNames.includes(normalized as Role)) return normalized as Role
+	return 'user'
 }
 
 export const cityNames: string[] = [

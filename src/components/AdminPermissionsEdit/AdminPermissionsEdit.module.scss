@@ -1,0 +1,245 @@
+.modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+}
+
+.modalContent {
+	background: white;
+	border-radius: 8px;
+	padding: 24px;
+	max-width: 700px;
+	width: 90%;
+	max-height: 80vh;
+	overflow-y: auto;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modalHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid #e0e0e0;
+
+	h2 {
+		margin: 0;
+		color: #333;
+		font-size: 24px;
+		font-weight: 600;
+	}
+}
+
+.closeButton {
+	background: none;
+	border: none;
+	font-size: 24px;
+	cursor: pointer;
+	color: #666;
+	padding: 4px;
+	border-radius: 4px;
+	transition: all 0.2s;
+
+	&:hover {
+		background-color: #f5f5f5;
+		color: #333;
+	}
+}
+
+.adminInfo {
+	margin-bottom: 24px;
+	padding: 16px;
+	background-color: #f8f9fa;
+	border-radius: 6px;
+
+	h3 {
+		margin: 0 0 12px 0;
+		color: #333;
+		font-size: 20px;
+		font-weight: 600;
+	}
+
+	p {
+		margin: 8px 0;
+		color: #555;
+		font-size: 14px;
+
+		strong {
+			color: #333;
+			font-weight: 600;
+		}
+	}
+}
+
+.permissionsSection {
+	h3 {
+		margin: 0 0 16px 0;
+		color: #333;
+		font-size: 18px;
+		font-weight: 600;
+	}
+}
+
+.permissionsHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.permissionsActions {
+	display: flex;
+	gap: 8px;
+}
+
+.actionButton {
+	background-color: #6c757d;
+	color: white;
+	border: none;
+	padding: 6px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: 500;
+	transition: background-color 0.2s;
+
+	&:hover {
+		background-color: #5a6268;
+	}
+}
+
+.permissionsList {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.permissionItem {
+	padding: 12px;
+	border: 1px solid #e0e0e0;
+	border-radius: 6px;
+	background-color: #fff;
+	transition: all 0.2s;
+
+	&:hover {
+		border-color: #007bff;
+		background-color: #f8f9fa;
+	}
+}
+
+.checkboxLabel {
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	width: 100%;
+	gap: 12px;
+}
+
+.checkbox {
+	display: none;
+}
+
+.checkboxCustom {
+	width: 20px;
+	height: 20px;
+	border: 2px solid #ddd;
+	border-radius: 4px;
+	position: relative;
+	flex-shrink: 0;
+	transition: all 0.2s;
+
+	&::after {
+		content: '';
+		position: absolute;
+		top: 2px;
+		left: 6px;
+		width: 6px;
+		height: 10px;
+		border: solid white;
+		border-width: 0 2px 2px 0;
+		transform: rotate(45deg);
+		opacity: 0;
+		transition: opacity 0.2s;
+	}
+}
+
+.checkbox:checked + .checkboxCustom {
+	background-color: #007bff;
+	border-color: #007bff;
+
+	&::after {
+		opacity: 1;
+	}
+}
+
+.permissionInfo {
+	flex: 1;
+}
+
+.permissionName {
+	font-weight: 500;
+	color: #333;
+	font-size: 14px;
+	line-height: 1.4;
+}
+
+.modalFooter {
+	margin-top: 24px;
+	padding-top: 16px;
+	border-top: 1px solid #e0e0e0;
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+}
+
+.cancelButton {
+	background-color: #6c757d;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	transition: background-color 0.2s;
+
+	&:hover:not(:disabled) {
+		background-color: #5a6268;
+	}
+
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+}
+
+.saveButton {
+	background-color: #007bff;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	transition: background-color 0.2s;
+
+	&:hover:not(:disabled) {
+		background-color: #0056b3;
+	}
+
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+}

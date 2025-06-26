@@ -5,8 +5,7 @@ import './App.scss'
 import Layout from './components/Layout/Layout'
 import Popup from './components/Popup/Popup'
 import Preloader from './components/Preloader/Preloader'
-import { AdminPanel, AdminStats, UsersPage } from './pages/AdminPanel'
-import LecturesPage from './pages/AdminPanel/LecturesPage'
+import { AdminPanel } from './pages/AdminPanel'
 import Courses from './pages/Courses/Courses'
 import SignIn from './pages/SignIn/SignIn'
 import SignUp from './pages/SignUp/SignUp'
@@ -20,15 +19,7 @@ import mainApi from './utils/authApi'
 function App() {
 	const [isPass, setIsPass] = useState<boolean>(false)
 	const [loggedIn, setLoggedIn] = useState<boolean>(false)
-	const [isError, setIsError] = useState<boolean>(false)
 	const [errorMessage, setErrorMessage] = useState<string>('')
-	const [currentUser, setCurrentUser] = useState<UserData>({
-		firstName: '',
-		lastName: '',
-		login: '',
-		role: '',
-		city: '',
-	})
 	const [isTokenCheck, setIsTokenCheck] = useState<boolean>(true)
 	const [isOpen, setIsOpen] = useState<boolean>(false)
 	const [isPlainPassword, setIsPlainPassword] = useState<string>('')
@@ -45,7 +36,6 @@ function App() {
 			mainApi
 				.getUserInfo(localStorage.jwt)
 				.then(userData => {
-					setCurrentUser(prev => ({ ...prev, ...userData }))
 					setLoggedIn(true)
 					dispatch(setUser(userData))
 				})
@@ -76,7 +66,6 @@ function App() {
 				navigate('/', { replace: true })
 
 				const userData = await mainApi.getUserInfo(token)
-				setCurrentUser(userData)
 				dispatch(setUser(userData))
 			} else {
 				setErrorMessage('Ошибка: токен не найден')
@@ -84,7 +73,6 @@ function App() {
 			}
 		} catch (error) {
 			setErrorMessage('Неверный логин или пароль')
-			setIsError(true)
 			console.error(`Ошибка входа в аккаунт ${error}`)
 		} finally {
 			setIsPass(false)
@@ -109,7 +97,6 @@ function App() {
 				console.error('Ошибка получения пароля для автоматической авторизации')
 			}
 		} catch (error) {
-			setIsError(true)
 			console.error(`Ошибка регистрации ${error}`)
 		} finally {
 			setIsPass(false)
@@ -146,26 +133,28 @@ function App() {
 							<Route path='/' element={<StartPage />} />
 							<Route
 								path='/signin'
-								element={<SignIn login={login} errorMessage={errorMessage} />}
+								element={
+									<SignIn
+										login={login}
+										errorMessage={errorMessage}
+										isPass={isPass}
+									/>
+								}
 							/>
 							<Route
 								path='/signup'
-								element={<SignUp registration={registration} />}
+								element={<SignUp registration={registration} isPass={isPass} />}
 							/>
 							<Route path='/profile' element={<UserAccount />} />
 							<Route path='/courses' element={<Courses />} />
 							<Route
-								path='/admin'
+								path='/admin/*'
 								element={
 									<ProtectedAdminRoute>
 										<AdminPanel />
 									</ProtectedAdminRoute>
 								}
-							>
-								<Route index element={<AdminStats />} />
-								<Route path='users' element={<UsersPage />} />
-								<Route path='lectures' element={<LecturesPage />} />
-							</Route>
+							/>
 						</Route>
 					</Routes>
 				</div>

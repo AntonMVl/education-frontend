@@ -1,51 +1,72 @@
 import React from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import styles from './AdminPanel.module.scss'
-
-const menu = [
-	{ path: '/admin', label: 'Статистика' },
-	{ path: '/admin/users', label: 'Пользователи' },
-	{ path: '/admin/admins', label: 'Администраторы' },
-	{ path: '/admin/courses', label: 'Курсы' },
-	{ path: '/admin/practice-check', label: 'Практика' },
-	{ path: '/admin/stats', label: 'Отчёты' },
-]
+import AdminsPage from './AdminsPage'
+import AdminStats from './AdminStats'
+import LecturesPage from './LecturesPage'
+import UsersPage from './UsersPage'
 
 const AdminPanel: React.FC = () => {
 	const location = useLocation()
+
+	const isActiveLink = (path: string) => {
+		return location.pathname === path
+	}
+
 	return (
 		<div className={styles.adminPanel}>
-			<aside className={styles.sidebar}>
-				<nav>
-					<ul>
-						{menu.map(item => (
-							<li key={item.path}>
-								<NavLink
-									to={item.path}
-									className={({ isActive }) =>
-										isActive ||
-										(item.path === '/admin' && location.pathname === '/admin')
-											? styles.active
-											: ''
-									}
-									end={item.path === '/admin'}
-								>
-									{item.label}
-								</NavLink>
-							</li>
-						))}
-						<li>
-							<Link to='/admin/lectures' className={styles.navLink}>
-								<span className={styles.navIcon}>📚</span>
-								Лекции
-							</Link>
-						</li>
-					</ul>
+			<div className={styles.sidebar}>
+				<div className={styles.sidebarHeader}>
+					<h2>Админ панель</h2>
+				</div>
+
+				<nav className={styles.navigation}>
+					<Link
+						to='/admin'
+						className={`${styles.navLink} ${
+							isActiveLink('/admin') ? styles.active : ''
+						}`}
+					>
+						Статистика
+					</Link>
+
+					<Link
+						to='/admin/users'
+						className={`${styles.navLink} ${
+							isActiveLink('/admin/users') ? styles.active : ''
+						}`}
+					>
+						Пользователи
+					</Link>
+
+					<Link
+						to='/admin/admins'
+						className={`${styles.navLink} ${
+							isActiveLink('/admin/admins') ? styles.active : ''
+						}`}
+					>
+						Администраторы
+					</Link>
+
+					<Link
+						to='/admin/lectures'
+						className={`${styles.navLink} ${
+							isActiveLink('/admin/lectures') ? styles.active : ''
+						}`}
+					>
+						Лекции
+					</Link>
 				</nav>
-			</aside>
-			<main className={styles.content}>
-				<Outlet />
-			</main>
+			</div>
+
+			<div className={styles.content}>
+				<Routes>
+					<Route index element={<AdminStats />} />
+					<Route path='users' element={<UsersPage />} />
+					<Route path='admins' element={<AdminsPage />} />
+					<Route path='lectures' element={<LecturesPage />} />
+				</Routes>
+			</div>
 		</div>
 	)
 }

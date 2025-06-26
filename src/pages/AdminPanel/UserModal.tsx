@@ -1,43 +1,81 @@
 import React, { useEffect, useState } from 'react'
-import {
-	cityNames,
-	roleDisplayNames,
-	roleNames,
-} from '../../constants/DropDownOptionValuse'
-import { AdminUser, CreateUserData, UpdateUserData } from '../../utils/adminApi'
+import { useSelector } from 'react-redux'
+import { RootState } from '../../store/store'
+import adminApi, { AdminUser } from '../../utils/adminApi'
 import styles from './UserModal.module.scss'
 
 interface UserModalProps {
 	isOpen: boolean
 	onClose: () => void
 	user?: AdminUser | null
-	onSave: (userData: CreateUserData | UpdateUserData) => Promise<void>
+	onSuccess: () => void
 }
+
+const roleOptions = [
+	{ value: 'user', label: 'Пользователь' },
+	{ value: 'admin', label: 'Администратор' },
+	{ value: 'superadmin', label: 'Суперадминистратор' },
+]
 
 const UserModal: React.FC<UserModalProps> = ({
 	isOpen,
 	onClose,
 	user,
-	onSave,
+	onSuccess,
 }) => {
-	const [formData, setFormData] = useState<CreateUserData>({
+	const currentUser = useSelector((state: RootState) => state.user.user)
+	const [loading, setLoading] = useState(false)
+	const [formData, setFormData] = useState<{
+		firstName: string
+		lastName: string
+		login: string
+		role: string
+		city: string
+		password?: string
+	}>({
 		firstName: '',
 		lastName: '',
 		login: '',
 		role: 'user',
 		city: '',
+		password: '',
 	})
-	const [loading, setLoading] = useState(false)
-	const [error, setError] = useState('')
+	const [errors, setErrors] = useState<Record<string, string>>({})
+
+	// Определяем доступные роли в зависимости от прав текущего пользователя
+	const getAvailableRoles = () => {
+		if (!currentUser) return roleOptions
+
+		if (currentUser.role === 'superadmin') {
+			return roleOptions // Суперадмин может создавать всех
+		}
+
+		if (currentUser.role === 'admin') {
+			const hasManageAdminsPermission =
+				currentUser.permissions?.includes('manage_admins')
+
+			if (hasManageAdminsPermission) {
+				return [
+					{ value: 'user', label: 'Пользователь' },
+					{ value: 'admin', label: 'Администратор' },
+				]
+			} else {
+				return [{ value: 'user', label: 'Пользователь' }]
+			}
+		}
+
+		return []
+	}
 
 	useEffect(() => {
 		if (user) {
 			setFormData({
-				firstName: user.firstName,
-				lastName: user.lastName,
-				login: user.login,
-				role: user.role,
-				city: user.city,
+				firstName: user.firstName || '',
+				lastName: user.lastName || '',
+				login: user.login || '',
+				role: user.role || 'user',
+				city: user.city || '',
+				password: '',
 			})
 		} else {
 			setFormData({
@@ -46,9 +84,10 @@ const UserModal: React.FC<UserModalProps> = ({
 				login: '',
 				role: 'user',
 				city: '',
+				password: '',
 			})
 		}
-		setError('')
+		setErrors({})
 	}, [user, isOpen])
 
 	const handleChange = (
@@ -56,80 +95,78 @@ const UserModal: React.FC<UserModalProps> = ({
 	) => {
 		const { name, value } = e.target
 		setFormData(prev => ({ ...prev, [name]: value }))
+		// Очищаем ошибку для этого поля
+		if (errors[name]) {
+			setErrors(prev => ({ ...prev, [name]: '' }))
+		}
+	}
+
+	const validateForm = () => {
+		const newErrors: Record<string, string> = {}
+
+		if (!formData.firstName.trim()) {
+			newErrors.firstName = 'Имя обязательно'
+		}
+
+		if (!formData.lastName.trim()) {
+			newErrors.lastName = 'Фамилия обязательна'
+		}
+
+		if (!formData.login.trim()) {
+			newErrors.login = 'Логин обязателен'
+		}
+
+		if (!formData.role) {
+			newErrors.role = 'Роль обязательна'
+		}
+
+		if (!formData.city.trim()) {
+			newErrors.city = 'Город обязателен'
+		}
+
+		if (!user && !formData.password) {
+			newErrors.password = 'Пароль обязателен'
+		}
+
+		setErrors(newErrors)
+		return Object.keys(newErrors).length === 0
 	}
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
+
+		if (!validateForm()) {
+			return
+		}
+
 		setLoading(true)
-		setError('')
-
-		// Валидация на фронтенде
-		if (!formData.firstName.trim()) {
-			setError('Имя обязательно для заполнения')
-			setLoading(false)
-			return
-		}
-
-		if (!formData.lastName.trim()) {
-			setError('Фамилия обязательна для заполнения')
-			setLoading(false)
-			return
-		}
-
-		if (!formData.login.trim()) {
-			setError('Логин обязателен для заполнения')
-			setLoading(false)
-			return
-		}
-
-		if (formData.login.trim().length < 3) {
-			setError('Логин должен содержать минимум 3 символа')
-			setLoading(false)
-			return
-		}
-
-		if (!formData.city.trim()) {
-			setError('Город обязателен для заполнения')
-			setLoading(false)
-			return
-		}
-
 		try {
-			// Убираем лишние пробелы
-			const cleanData = {
-				...formData,
-				firstName: formData.firstName.trim(),
-				lastName: formData.lastName.trim(),
-				login: formData.login.trim(),
-				city: formData.city.trim(),
+			if (user) {
+				// Обновление пользователя
+				const { password, ...updateData } = formData
+				const finalUpdateData: any = { ...updateData }
+				if (password) {
+					finalUpdateData.password = password
+				}
+				await adminApi.updateUser(user.id, finalUpdateData)
+				alert('Пользователь успешно обновлен')
+			} else {
+				// Создание пользователя
+				const result = await adminApi.createUser(formData)
+				alert(`Пользователь успешно создан. Пароль: ${result.plainPassword}`)
 			}
-
-			await onSave(cleanData)
+			onSuccess()
 			onClose()
 		} catch (error: unknown) {
-			// Улучшенная обработка ошибок
-			if (error && typeof error === 'object' && 'response' in error) {
-				const axiosError = error as {
-					response?: { data?: { message?: string | string[] } }
-				}
-				if (axiosError.response?.data?.message) {
-					if (Array.isArray(axiosError.response.data.message)) {
-						setError(axiosError.response.data.message.join(', '))
-					} else {
-						setError(axiosError.response.data.message)
-					}
-				} else {
-					setError('Ошибка сохранения пользователя')
-				}
-			} else if (error instanceof Error) {
-				setError(error.message)
-			} else {
-				setError('Ошибка сохранения пользователя')
-			}
+			const errorMessage =
+				error instanceof Error ? error.message : 'Произошла ошибка'
+			alert(`Ошибка: ${errorMessage}`)
 		} finally {
 			setLoading(false)
 		}
 	}
+
+	const availableRoles = getAvailableRoles()
 
 	if (!isOpen) return null
 
@@ -137,92 +174,141 @@ const UserModal: React.FC<UserModalProps> = ({
 		<div className={styles.modalOverlay} onClick={onClose}>
 			<div className={styles.modal} onClick={e => e.stopPropagation()}>
 				<div className={styles.modalHeader}>
-					<h3>
+					<h2>
 						{user ? 'Редактировать пользователя' : 'Создать пользователя'}
-					</h3>
-					<button className={styles.closeBtn} onClick={onClose}>
+					</h2>
+					<button className={styles.closeButton} onClick={onClose}>
 						×
 					</button>
 				</div>
 
 				<form onSubmit={handleSubmit} className={styles.form}>
-					{error && <div className={styles.error}>{error}</div>}
-
 					<div className={styles.formGroup}>
-						<label>Имя:</label>
+						<label htmlFor='firstName'>Имя *</label>
 						<input
 							type='text'
+							id='firstName'
 							name='firstName'
 							value={formData.firstName}
 							onChange={handleChange}
-							required
+							className={errors.firstName ? styles.error : ''}
 						/>
+						{errors.firstName && (
+							<span className={styles.errorText}>{errors.firstName}</span>
+						)}
 					</div>
 
 					<div className={styles.formGroup}>
-						<label>Фамилия:</label>
+						<label htmlFor='lastName'>Фамилия *</label>
 						<input
 							type='text'
+							id='lastName'
 							name='lastName'
 							value={formData.lastName}
 							onChange={handleChange}
-							required
+							className={errors.lastName ? styles.error : ''}
 						/>
+						{errors.lastName && (
+							<span className={styles.errorText}>{errors.lastName}</span>
+						)}
 					</div>
 
 					<div className={styles.formGroup}>
-						<label>Логин:</label>
+						<label htmlFor='login'>Логин *</label>
 						<input
 							type='text'
+							id='login'
 							name='login'
 							value={formData.login}
 							onChange={handleChange}
-							required
-							minLength={3}
-							pattern='.{3,}'
-							title='Логин должен содержать минимум 3 символа'
-							disabled={!!user} // логин нельзя менять при редактировании
+							className={errors.login ? styles.error : ''}
 						/>
+						{errors.login && (
+							<span className={styles.errorText}>{errors.login}</span>
+						)}
 					</div>
 
 					<div className={styles.formGroup}>
-						<label>Роль:</label>
-						<select name='role' value={formData.role} onChange={handleChange}>
-							{roleNames.map(role => (
-								<option key={role} value={role}>
-									{roleDisplayNames[role]}
+						<label htmlFor='role'>Роль *</label>
+						<select
+							id='role'
+							name='role'
+							value={formData.role}
+							onChange={handleChange}
+							className={errors.role ? styles.error : ''}
+						>
+							{availableRoles.map(role => (
+								<option key={role.value} value={role.value}>
+									{role.label}
 								</option>
 							))}
 						</select>
+						{errors.role && (
+							<span className={styles.errorText}>{errors.role}</span>
+						)}
 					</div>
 
 					<div className={styles.formGroup}>
-						<label>Город:</label>
-						<select
+						<label htmlFor='city'>Город *</label>
+						<input
+							type='text'
+							id='city'
 							name='city'
 							value={formData.city}
 							onChange={handleChange}
-							required
-						>
-							<option value=''>Выберите город</option>
-							{cityNames.map(city => (
-								<option key={city} value={city}>
-									{city}
-								</option>
-							))}
-						</select>
+							className={errors.city ? styles.error : ''}
+						/>
+						{errors.city && (
+							<span className={styles.errorText}>{errors.city}</span>
+						)}
 					</div>
 
-					<div className={styles.modalFooter}>
+					{!user && (
+						<div className={styles.formGroup}>
+							<label htmlFor='password'>Пароль *</label>
+							<input
+								type='password'
+								id='password'
+								name='password'
+								value={formData.password}
+								onChange={handleChange}
+								className={errors.password ? styles.error : ''}
+							/>
+							{errors.password && (
+								<span className={styles.errorText}>{errors.password}</span>
+							)}
+						</div>
+					)}
+
+					{user && (
+						<div className={styles.formGroup}>
+							<label htmlFor='password'>
+								Новый пароль (оставьте пустым, чтобы не изменять)
+							</label>
+							<input
+								type='password'
+								id='password'
+								name='password'
+								value={formData.password}
+								onChange={handleChange}
+							/>
+						</div>
+					)}
+
+					<div className={styles.formActions}>
 						<button
 							type='button'
 							onClick={onClose}
-							className={styles.cancelBtn}
+							className={styles.cancelButton}
 						>
 							Отмена
 						</button>
-						<button type='submit' className={styles.saveBtn} disabled={loading}>
-							{loading ? 'Сохранение...' : 'Сохранить'}
+						<button
+							type='submit'
+							disabled={loading}
+							className={styles.submitButton}
+						>
+							{loading ? 'Сохранение...' : user ? 'Сохранить' : 'Создать'}
 						</button>
 					</div>
 				</form>
