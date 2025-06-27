@@ -9,6 +9,12 @@
 	justify-content: space-between;
 	box-sizing: border-box;
 
+	&__leftSection {
+		display: flex;
+		align-items: center;
+		gap: 15px;
+	}
+
 	&__button {
 		@include mixins.defaultButton();
 		width: 40px;
@@ -28,9 +34,19 @@
 		}
 	}
 
+	&__userName {
+		@include mixins.fontSize(16px, 500, 16px);
+		color: #fff;
+		padding: 8px 12px;
+		background-color: rgba(255, 255, 255, 0.1);
+		border-radius: 6px;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+	}
+
 	&__linksContainer {
 		display: flex;
 		gap: 2vw;
+		align-items: center;
 	}
 
 	&__link {

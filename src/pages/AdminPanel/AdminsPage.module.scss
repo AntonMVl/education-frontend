@@ -7,7 +7,7 @@
 .header {
 	margin-bottom: 24px;
 
-	h1 {
+	h2 {
 		margin: 0 0 8px 0;
 		color: #333;
 		font-size: 28px;
@@ -91,66 +91,68 @@
 	}
 }
 
-.tableContainer {
+.adminsList {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+	gap: 20px;
+}
+
+.adminCard {
 	background: white;
 	border-radius: 8px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	overflow: hidden;
+	padding: 20px;
+	transition: box-shadow 0.2s;
+
+	&:hover {
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	}
 }
 
-.adminsTable {
-	width: 100%;
-	border-collapse: collapse;
+.adminInfo {
+	margin-bottom: 16px;
 
-	th,
-	td {
-		padding: 12px 16px;
-		text-align: left;
-		border-bottom: 1px solid #e0e0e0;
+	h3 {
+		margin: 0 0 8px 0;
+		color: #333;
+		font-size: 18px;
+		font-weight: 600;
 	}
 
-	th {
-		background-color: #f8f9fa;
-		font-weight: 600;
+	p {
+		margin: 0 0 4px 0;
+		color: #666;
+		font-size: 14px;
+	}
+
+	.date {
+		color: #999;
+		font-size: 12px;
+		margin-bottom: 12px;
+	}
+}
+
+.permissions {
+	margin-top: 12px;
+
+	strong {
+		display: block;
+		margin-bottom: 8px;
 		color: #333;
 		font-size: 14px;
 	}
 
-	td {
-		color: #555;
-		font-size: 14px;
+	ul {
+		margin: 0;
+		padding-left: 20px;
+		list-style: disc;
+
+		li {
+			color: #666;
+			font-size: 13px;
+			margin-bottom: 2px;
+		}
 	}
-
-	tr:hover {
-		background-color: #f8f9fa;
-	}
-}
-
-.role {
-	padding: 4px 8px;
-	border-radius: 4px;
-	font-size: 12px;
-	font-weight: 500;
-	text-transform: uppercase;
-
-	&.admin {
-		background-color: #e3f2fd;
-		color: #1976d2;
-	}
-
-	&.superadmin {
-		background-color: #fff3e0;
-		color: #f57c00;
-	}
-}
-
-.permissionsCount {
-	background-color: #e8f5e8;
-	color: #2e7d32;
-	padding: 4px 8px;
-	border-radius: 4px;
-	font-size: 12px;
-	font-weight: 500;
 }
 
 .actions {
@@ -159,35 +161,36 @@
 	flex-wrap: wrap;
 }
 
-.actionButton {
-	padding: 6px 12px;
+.editButton {
+	padding: 8px 16px;
 	border: none;
 	border-radius: 4px;
 	cursor: pointer;
-	font-size: 12px;
+	font-size: 14px;
 	font-weight: 500;
 	transition: all 0.2s;
-	background-color: #6c757d;
+	background-color: #007bff;
 	color: white;
 
 	&:hover {
-		background-color: #5a6268;
-	}
-
-	&.editButton {
-		background-color: #007bff;
-
-		&:hover {
-			background-color: #0056b3;
-		}
+		background-color: #0056b3;
 	}
 }
 
-.noData {
-	text-align: center;
-	padding: 40px;
-	color: #666;
-	font-style: italic;
+.deleteButton {
+	padding: 8px 16px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	transition: all 0.2s;
+	background-color: #dc3545;
+	color: white;
+
+	&:hover {
+		background-color: #c82333;
+	}
 }
 
 .loading {

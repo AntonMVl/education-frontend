@@ -205,8 +205,17 @@ const UsersPage: React.FC = () => {
 		// Суперадмин может редактировать всех (кроме себя)
 		if (currentUserRole === 'superadmin') return true
 
-		// Админ может редактировать только обычных пользователей (кроме себя)
-		if (currentUserRole === 'admin' && targetUserRole === 'user') return true
+		// Админ может редактировать пользователей и админов (кроме себя)
+		if (currentUserRole === 'admin') {
+			// Если редактируем админа, нужны права MANAGE_ADMINS
+			if (targetUserRole === 'admin') {
+				return currentUser?.permissions?.includes('manage_admins') || false
+			}
+			// Если редактируем пользователя, нужны права EDIT_USERS
+			if (targetUserRole === 'user') {
+				return currentUser?.permissions?.includes('edit_users') || false
+			}
+		}
 
 		return false
 	}
@@ -220,11 +229,22 @@ const UsersPage: React.FC = () => {
 		const currentUserRole = currentUser.role?.toLowerCase()
 		const targetUserRole = user.role?.toLowerCase()
 
-		// Суперадмин может удалять всех (кроме себя)
-		if (currentUserRole === 'superadmin') return true
+		// Суперадмин может удалять всех (кроме себя и других суперадминов)
+		if (currentUserRole === 'superadmin') {
+			return targetUserRole !== 'superadmin'
+		}
 
-		// Админ может удалять только обычных пользователей (кроме себя)
-		if (currentUserRole === 'admin' && targetUserRole === 'user') return true
+		// Админ может удалять пользователей и админов (кроме себя)
+		if (currentUserRole === 'admin') {
+			// Если удаляем админа, нужны права MANAGE_ADMINS
+			if (targetUserRole === 'admin') {
+				return currentUser?.permissions?.includes('manage_admins') || false
+			}
+			// Если удаляем пользователя, нужны права DELETE_USERS
+			if (targetUserRole === 'user') {
+				return currentUser?.permissions?.includes('delete_users') || false
+			}
+		}
 
 		return false
 	}

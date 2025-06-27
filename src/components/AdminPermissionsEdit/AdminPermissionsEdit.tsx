@@ -25,7 +25,7 @@ const AdminPermissionsEdit: React.FC<AdminPermissionsEditProps> = ({
 
 	useEffect(() => {
 		// Инициализируем выбранные права из данных
-		setSelectedPermissions(data.permissions.map(p => p.permission))
+		setSelectedPermissions((data.permissions || []).map(p => p.permission))
 	}, [data])
 
 	const handlePermissionToggle = (permission: Permission) => {

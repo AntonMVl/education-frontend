@@ -10,6 +10,7 @@ import {
 } from '../../constants/DropDownOptionValuse'
 import { usePermissions } from '../../hooks/usePermissions'
 import { RootState } from '../../store/store'
+import { Permission } from '../../types/permissions'
 import { AdminUser, UpdateUserData } from '../../utils/adminApi'
 import styles from './UserInfoModal.module.scss'
 
@@ -64,7 +65,15 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 		if (currentUserRole === 'superadmin') {
 			return roleNames // Все роли доступны суперадмину
 		} else if (currentUserRole === 'admin') {
-			return ['user'] // Админ может изменять только на роль user
+			// Проверяем права на управление админами
+			const hasManageAdminsPermission =
+				currentUser.permissions?.includes('manage_admins')
+
+			if (hasManageAdminsPermission) {
+				return ['user', 'admin'] // Админ с правами может изменять на user и admin
+			} else {
+				return ['user'] // Админ без прав может изменять только на user
+			}
 		}
 		return ['user']
 	}
@@ -99,7 +108,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 		e.preventDefault()
 
 		// Проверяем права перед сохранением
-		if (!hasPermission('EDIT_USERS' as any)) {
+		if (!hasPermission(Permission.EDIT_USERS)) {
 			setPermissionError({
 				isOpen: true,
 				action: 'редактировать пользователей',
@@ -196,7 +205,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 
 	const handleEdit = () => {
 		// Проверяем права перед переходом в режим редактирования
-		if (!hasPermission('EDIT_USERS' as any)) {
+		if (!hasPermission(Permission.EDIT_USERS)) {
 			setPermissionError({
 				isOpen: true,
 				action: 'редактировать пользователей',

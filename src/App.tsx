@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Route, Routes, useNavigate } from 'react-router-dom'
+import adminApi from './api/adminApi'
 import './App.scss'
 import Layout from './components/Layout/Layout'
 import Popup from './components/Popup/Popup'
@@ -35,9 +36,19 @@ function App() {
 		if (localStorage.jwt) {
 			mainApi
 				.getUserInfo(localStorage.jwt)
-				.then(userData => {
+				.then(async userData => {
 					setLoggedIn(true)
-					dispatch(setUser(userData))
+
+					// Загружаем права пользователя
+					const permissions = await loadUserPermissions()
+
+					// Обновляем данные пользователя с правами
+					const userWithPermissions = {
+						...userData,
+						permissions: permissions,
+					}
+
+					dispatch(setUser(userWithPermissions))
 				})
 				.catch(err => {
 					console.error(`Ошибка при загрузке данных пользователя ${err}`)
@@ -54,6 +65,17 @@ function App() {
 		}
 	}, [dispatch])
 
+	// Функция для загрузки прав пользователя
+	const loadUserPermissions = async () => {
+		try {
+			const permissions = await adminApi.getMyPermissions()
+			return permissions
+		} catch (error) {
+			console.error('Ошибка загрузки прав пользователя:', error)
+			return []
+		}
+	}
+
 	async function login(login: string, password: string) {
 		try {
 			setIsPass(true)
@@ -66,7 +88,17 @@ function App() {
 				navigate('/', { replace: true })
 
 				const userData = await mainApi.getUserInfo(token)
-				dispatch(setUser(userData))
+
+				// Загружаем права пользователя
+				const permissions = await loadUserPermissions()
+
+				// Обновляем данные пользователя с правами
+				const userWithPermissions = {
+					...userData,
+					permissions: permissions,
+				}
+
+				dispatch(setUser(userWithPermissions))
 			} else {
 				setErrorMessage('Ошибка: токен не найден')
 				console.error('Ошибка авторизации: токен не найден', response)

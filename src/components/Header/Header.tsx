@@ -16,13 +16,20 @@ export const Header: FC<IHeaderProps> = ({ loggedIn, signOut }) => {
 
 	return (
 		<section className={styles.header}>
-			<Link to='/' className={styles.header__button}>
-				<img
-					src={mainIcon}
-					alt='main-icon'
-					className={styles.header__buttonIcon}
-				/>
-			</Link>
+			<div className={styles.header__leftSection}>
+				<Link to='/' className={styles.header__button}>
+					<img
+						src={mainIcon}
+						alt='main-icon'
+						className={styles.header__buttonIcon}
+					/>
+				</Link>
+				{loggedIn && user && (
+					<span className={styles.header__userName}>
+						{user.firstName} {user.lastName}
+					</span>
+				)}
+			</div>
 			<div className={styles.header__linksContainer}>
 				{loggedIn ? (
 					<>

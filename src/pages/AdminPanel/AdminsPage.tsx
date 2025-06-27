@@ -1,30 +1,23 @@
 import React, { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 import adminApi from '../../api/adminApi'
 import AdminPermissionsEdit from '../../components/AdminPermissionsEdit/AdminPermissionsEdit'
-import AdminPermissionsInfo from '../../components/AdminPermissionsInfo/AdminPermissionsInfo'
 import PermissionErrorModal from '../../components/PermissionErrorModal/PermissionErrorModal'
-import { usePermissions } from '../../hooks/usePermissions'
-import {
-	AdminPermissionsResponse,
-	AdminWithPermissions,
-	Permission,
-	Permission as PermissionType,
-} from '../../types/permissions'
+import { RootState } from '../../store/store'
+import { AdminWithPermissions, Permission } from '../../types/permissions'
 import styles from './AdminsPage.module.scss'
+import ConfirmModal from './ConfirmModal'
 
 const AdminsPage: React.FC = () => {
 	const [admins, setAdmins] = useState<AdminWithPermissions[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
-	const [searchTerm, setSearchTerm] = useState('')
-	const [selectedRole, setSelectedRole] = useState<string>('all')
-
-	// Модальные окна
-	const [permissionsInfo, setPermissionsInfo] =
-		useState<AdminPermissionsResponse | null>(null)
-	const [permissionsEdit, setPermissionsEdit] =
-		useState<AdminPermissionsResponse | null>(null)
-	const [isEditLoading, setIsEditLoading] = useState(false)
+	const [editingAdmin, setEditingAdmin] = useState<AdminWithPermissions | null>(
+		null
+	)
+	const [showConfirmModal, setShowConfirmModal] = useState(false)
+	const [adminToDelete, setAdminToDelete] =
+		useState<AdminWithPermissions | null>(null)
 
 	// Модальное окно ошибки прав
 	const [permissionError, setPermissionError] = useState<{
@@ -35,7 +28,15 @@ const AdminsPage: React.FC = () => {
 		action: '',
 	})
 
-	const { hasPermission } = usePermissions()
+	const user = useSelector((state: RootState) => state.user.user)
+
+	// Определяем права текущего пользователя
+	const canManageAdmins =
+		user?.role === 'superadmin' || user?.permissions?.includes('manage_admins')
+
+	const canManagePermissions =
+		user?.role === 'superadmin' ||
+		user?.permissions?.includes('manage_admin_permissions')
 
 	useEffect(() => {
 		loadAdmins()
@@ -44,9 +45,10 @@ const AdminsPage: React.FC = () => {
 	const loadAdmins = async () => {
 		try {
 			setLoading(true)
+			const response = await adminApi.getAllAdmins()
+			console.log('Admins response:', response)
+			setAdmins(response)
 			setError(null)
-			const data = await adminApi.getAllAdmins()
-			setAdmins(data)
 		} catch (err) {
 			setError('Ошибка при загрузке администраторов')
 			console.error('Error loading admins:', err)
@@ -55,204 +57,140 @@ const AdminsPage: React.FC = () => {
 		}
 	}
 
-	const handleViewPermissions = async (adminId: number) => {
-		try {
-			const data = await adminApi.getAdminPermissions(adminId)
-			setPermissionsInfo(data)
-		} catch (err) {
-			setError('Ошибка при загрузке прав администратора')
-			console.error('Error loading admin permissions:', err)
-		}
-	}
-
-	const handleEditPermissions = async (adminId: number) => {
-		if (!hasPermission(Permission.MANAGE_ADMINS)) {
+	const handleEditPermissions = (admin: AdminWithPermissions) => {
+		if (!canManagePermissions) {
 			setPermissionError({
 				isOpen: true,
-				action: 'редактировать права администраторов',
+				action: 'управлять правами администраторов',
 			})
 			return
 		}
+		setEditingAdmin(admin)
+	}
+
+	const handleSavePermissions = async (permissions: Permission[]) => {
+		if (!editingAdmin) return
 
 		try {
-			const data = await adminApi.getAdminPermissions(adminId)
-			setPermissionsEdit(data)
+			await adminApi.updateAdminPermissions(editingAdmin.id, permissions)
+			await loadAdmins() // Перезагружаем список
+			setEditingAdmin(null)
 		} catch (err) {
-			setError('Ошибка при загрузке прав администратора')
-			console.error('Error loading admin permissions:', err)
+			console.error('Error updating permissions:', err)
 		}
 	}
 
-	const handleSavePermissions = async (permissions: PermissionType[]) => {
-		if (!permissionsEdit) return
-
-		if (!hasPermission(Permission.MANAGE_ADMINS)) {
+	const handleDeleteAdmin = (admin: AdminWithPermissions) => {
+		if (!canManageAdmins) {
 			setPermissionError({
 				isOpen: true,
-				action: 'сохранять права администраторов',
+				action: 'удалять администраторов',
 			})
 			return
 		}
-
-		try {
-			setIsEditLoading(true)
-			await adminApi.updateAdminPermissions(
-				permissionsEdit.admin.id,
-				permissions
-			)
-			setPermissionsEdit(null)
-			loadAdmins() // Перезагружаем список для обновления данных
-		} catch (err) {
-			setError('Ошибка при сохранении прав администратора')
-			console.error('Error saving admin permissions:', err)
-		} finally {
-			setIsEditLoading(false)
-		}
+		setAdminToDelete(admin)
+		setShowConfirmModal(true)
 	}
 
-	const filteredAdmins = admins.filter(admin => {
-		const matchesSearch =
-			admin.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			admin.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			admin.login.toLowerCase().includes(searchTerm.toLowerCase())
+	const confirmDelete = async () => {
+		if (!adminToDelete) return
 
-		const matchesRole = selectedRole === 'all' || admin.role === selectedRole
-
-		return matchesSearch && matchesRole
-	})
-
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleDateString('ru-RU')
+		try {
+			// Удаляем администратора через API
+			await adminApi.deleteUser(adminToDelete.id)
+			await loadAdmins()
+			setShowConfirmModal(false)
+			setAdminToDelete(null)
+		} catch (err) {
+			console.error('Error deleting admin:', err)
+		}
 	}
 
 	if (loading) {
-		return <div className={styles.loading}>Загрузка администраторов...</div>
+		return <div className={styles.loading}>Загрузка...</div>
+	}
+
+	if (error) {
+		return <div className={styles.error}>{error}</div>
 	}
 
 	return (
 		<div className={styles.adminsPage}>
 			<div className={styles.header}>
-				<h1>Управление администраторами</h1>
-				<p>Просмотр и управление правами администраторов системы</p>
+				<h2>Управление администраторами</h2>
+				<p>Всего администраторов: {admins.length}</p>
 			</div>
 
-			{error && (
-				<div className={styles.error}>
-					{error}
-					<button onClick={() => setError(null)}>×</button>
-				</div>
-			)}
+			<div className={styles.adminsList}>
+				{admins.map(admin => (
+					<div key={admin.id} className={styles.adminCard}>
+						<div className={styles.adminInfo}>
+							<h3>
+								{admin.firstName} {admin.lastName}
+							</h3>
+							<p>{admin.login}</p>
+							<p className={styles.date}>
+								Создан: {new Date(admin.createdAt).toLocaleDateString()}
+							</p>
+							<div className={styles.permissions}>
+								<strong>Разрешения:</strong>
+								<ul>
+									{(admin.permissions || []).map(permission => (
+										<li key={permission.permission}>
+											{permission.displayName}
+										</li>
+									))}
+								</ul>
+							</div>
+						</div>
 
-			<div className={styles.filters}>
-				<div className={styles.searchContainer}>
-					<input
-						type='text'
-						placeholder='Поиск по имени, фамилии или логину...'
-						value={searchTerm}
-						onChange={e => setSearchTerm(e.target.value)}
-						className={styles.searchInput}
-					/>
-				</div>
-
-				<div className={styles.roleFilter}>
-					<select
-						value={selectedRole}
-						onChange={e => setSelectedRole(e.target.value)}
-						className={styles.roleSelect}
-					>
-						<option value='all'>Все роли</option>
-						<option value='admin'>Администраторы</option>
-						<option value='superadmin'>Суперадминистраторы</option>
-					</select>
-				</div>
-			</div>
-
-			<div className={styles.tableContainer}>
-				<table className={styles.adminsTable}>
-					<thead>
-						<tr>
-							<th>ID</th>
-							<th>Имя</th>
-							<th>Фамилия</th>
-							<th>Логин</th>
-							<th>Роль</th>
-							<th>Город</th>
-							<th>Дата регистрации</th>
-							<th>Количество прав</th>
-							<th>Действия</th>
-						</tr>
-					</thead>
-					<tbody>
-						{filteredAdmins.map(admin => (
-							<tr key={admin.id}>
-								<td>{admin.id}</td>
-								<td>{admin.firstName}</td>
-								<td>{admin.lastName}</td>
-								<td>{admin.login}</td>
-								<td>
-									<span className={`${styles.role} ${styles[admin.role]}`}>
-										{admin.role === 'superadmin'
-											? 'Суперадминистратор'
-											: 'Администратор'}
-									</span>
-								</td>
-								<td>{admin.city}</td>
-								<td>{formatDate(admin.createdAt)}</td>
-								<td>
-									<span className={styles.permissionsCount}>
-										{admin.permissions.length} прав
-									</span>
-								</td>
-								<td>
-									<div className={styles.actions}>
-										<button
-											className={styles.actionButton}
-											onClick={() => handleViewPermissions(admin.id)}
-											title='Просмотр прав'
-										>
-											Информация
-										</button>
-										<button
-											className={`${styles.actionButton} ${styles.editButton}`}
-											onClick={() => handleEditPermissions(admin.id)}
-											title='Редактировать права'
-										>
-											Редактировать
-										</button>
-									</div>
-								</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
-
-				{filteredAdmins.length === 0 && (
-					<div className={styles.noData}>
-						{searchTerm || selectedRole !== 'all'
-							? 'Администраторы не найдены'
-							: 'Администраторы не найдены'}
+						<div className={styles.actions}>
+							<button
+								onClick={() => handleEditPermissions(admin)}
+								className={styles.editButton}
+							>
+								Редактировать разрешения
+							</button>
+							{admin.id !== user?.id && (
+								<button
+									onClick={() => handleDeleteAdmin(admin)}
+									className={styles.deleteButton}
+								>
+									Удалить
+								</button>
+							)}
+						</div>
 					</div>
-				)}
+				))}
 			</div>
 
-			{/* Модальные окна */}
-			{permissionsInfo && (
-				<AdminPermissionsInfo
-					data={permissionsInfo}
-					onClose={() => setPermissionsInfo(null)}
-				/>
-			)}
-
-			{permissionsEdit && (
+			{editingAdmin && (
 				<AdminPermissionsEdit
-					data={permissionsEdit}
+					data={{
+						admin: {
+							id: editingAdmin.id,
+							firstName: editingAdmin.firstName,
+							lastName: editingAdmin.lastName,
+							login: editingAdmin.login,
+							role: editingAdmin.role,
+						},
+						permissions: editingAdmin.permissions || [],
+					}}
 					onSave={handleSavePermissions}
-					onClose={() => setPermissionsEdit(null)}
-					isLoading={isEditLoading}
+					onClose={() => setEditingAdmin(null)}
 				/>
 			)}
 
-			{/* Модальное окно ошибки прав */}
+			{showConfirmModal && adminToDelete && (
+				<ConfirmModal
+					isOpen={showConfirmModal}
+					onClose={() => setShowConfirmModal(false)}
+					onConfirm={confirmDelete}
+					title='Подтверждение удаления'
+					message={`Вы уверены, что хотите удалить администратора "${adminToDelete.firstName} ${adminToDelete.lastName}"?`}
+				/>
+			)}
+
 			<PermissionErrorModal
 				isOpen={permissionError.isOpen}
 				onClose={() => setPermissionError({ isOpen: false, action: '' })}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { cityNames } from '../../constants/DropDownOptionValuse'
 import { RootState } from '../../store/store'
 import adminApi, { AdminUser } from '../../utils/adminApi'
 import styles from './UserModal.module.scss'
@@ -25,6 +26,8 @@ const UserModal: React.FC<UserModalProps> = ({
 }) => {
 	const currentUser = useSelector((state: RootState) => state.user.user)
 	const [loading, setLoading] = useState(false)
+	const [showPasswordModal, setShowPasswordModal] = useState(false)
+	const [generatedPassword, setGeneratedPassword] = useState('')
 	const [formData, setFormData] = useState<{
 		firstName: string
 		lastName: string
@@ -38,7 +41,6 @@ const UserModal: React.FC<UserModalProps> = ({
 		login: '',
 		role: 'user',
 		city: '',
-		password: '',
 	})
 	const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -84,7 +86,6 @@ const UserModal: React.FC<UserModalProps> = ({
 				login: '',
 				role: 'user',
 				city: '',
-				password: '',
 			})
 		}
 		setErrors({})
@@ -124,10 +125,6 @@ const UserModal: React.FC<UserModalProps> = ({
 			newErrors.city = 'Город обязателен'
 		}
 
-		if (!user && !formData.password) {
-			newErrors.password = 'Пароль обязателен'
-		}
-
 		setErrors(newErrors)
 		return Object.keys(newErrors).length === 0
 	}
@@ -144,19 +141,27 @@ const UserModal: React.FC<UserModalProps> = ({
 			if (user) {
 				// Обновление пользователя
 				const { password, ...updateData } = formData
-				const finalUpdateData: any = { ...updateData }
+				const finalUpdateData: Partial<typeof formData> = { ...updateData }
 				if (password) {
 					finalUpdateData.password = password
 				}
 				await adminApi.updateUser(user.id, finalUpdateData)
 				alert('Пользователь успешно обновлен')
+				onSuccess()
+				onClose()
 			} else {
 				// Создание пользователя
-				const result = await adminApi.createUser(formData)
-				alert(`Пользователь успешно создан. Пароль: ${result.plainPassword}`)
+				const createData = {
+					firstName: formData.firstName,
+					lastName: formData.lastName,
+					login: formData.login,
+					role: formData.role,
+					city: formData.city,
+				}
+				const result = await adminApi.createUser(createData)
+				setGeneratedPassword(result.plainPassword)
+				setShowPasswordModal(true)
 			}
-			onSuccess()
-			onClose()
 		} catch (error: unknown) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Произошла ошибка'
@@ -250,35 +255,24 @@ const UserModal: React.FC<UserModalProps> = ({
 
 					<div className={styles.formGroup}>
 						<label htmlFor='city'>Город *</label>
-						<input
-							type='text'
+						<select
 							id='city'
 							name='city'
 							value={formData.city}
 							onChange={handleChange}
 							className={errors.city ? styles.error : ''}
-						/>
+						>
+							<option value=''>Выберите город</option>
+							{cityNames.map(city => (
+								<option key={city} value={city}>
+									{city}
+								</option>
+							))}
+						</select>
 						{errors.city && (
 							<span className={styles.errorText}>{errors.city}</span>
 						)}
 					</div>
-
-					{!user && (
-						<div className={styles.formGroup}>
-							<label htmlFor='password'>Пароль *</label>
-							<input
-								type='password'
-								id='password'
-								name='password'
-								value={formData.password}
-								onChange={handleChange}
-								className={errors.password ? styles.error : ''}
-							/>
-							{errors.password && (
-								<span className={styles.errorText}>{errors.password}</span>
-							)}
-						</div>
-					)}
 
 					{user && (
 						<div className={styles.formGroup}>
@@ -313,6 +307,53 @@ const UserModal: React.FC<UserModalProps> = ({
 					</div>
 				</form>
 			</div>
+
+			{/* Модальное окно с сгенерированным паролем */}
+			{showPasswordModal && (
+				<div
+					className={styles.modalOverlay}
+					onClick={() => setShowPasswordModal(false)}
+				>
+					<div className={styles.modal} onClick={e => e.stopPropagation()}>
+						<div className={styles.modalHeader}>
+							<h2>Пользователь успешно создан</h2>
+							<button
+								className={styles.closeButton}
+								onClick={() => {
+									setShowPasswordModal(false)
+									onSuccess()
+									onClose()
+								}}
+							>
+								×
+							</button>
+						</div>
+						<div className={styles.modalContent}>
+							<p>Временный пароль для входа:</p>
+							<div className={styles.passwordDisplay}>
+								<strong>{generatedPassword}</strong>
+							</div>
+							<p className={styles.passwordNote}>
+								Передайте этот пароль пользователю. Рекомендуется сменить пароль
+								при первом входе в личном кабинете.
+							</p>
+						</div>
+						<div className={styles.formActions}>
+							<button
+								type='button'
+								onClick={() => {
+									setShowPasswordModal(false)
+									onSuccess()
+									onClose()
+								}}
+								className={styles.submitButton}
+							>
+								Закрыть
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }
