@@ -18,6 +18,9 @@ export enum Permission {
 
 	// Управление администраторами
 	MANAGE_ADMINS = 'manage_admins',
+
+	// Управление правами администраторов
+	MANAGE_ADMIN_PERMISSIONS = 'manage_admin_permissions',
 }
 
 export const PermissionDisplayNames: Record<Permission, string> = {
@@ -29,7 +32,8 @@ export const PermissionDisplayNames: Record<Permission, string> = {
 	[Permission.MANAGE_TESTS]: 'Добавление, редактирование и удаление тестов',
 	[Permission.REVIEW_EXAMS]: 'Проверка экзаменов',
 	[Permission.MANAGE_ADMINS]:
-		'Добавление, редактирование и удаление администраторов',
+		'Создание, редактирование и удаление администраторов',
+	[Permission.MANAGE_ADMIN_PERMISSIONS]: 'Управление правами администраторов',
 }
 
 export interface AdminPermission {

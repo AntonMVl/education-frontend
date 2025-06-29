@@ -114,6 +114,7 @@ const LectureModal: React.FC<LectureModalProps> = ({
 							onChange={handleInputChange}
 							placeholder='Введите название лекции'
 							required
+							autoComplete='off'
 						/>
 					</div>
 
@@ -127,6 +128,7 @@ const LectureModal: React.FC<LectureModalProps> = ({
 							placeholder='Введите краткое описание лекции'
 							rows={3}
 							required
+							autoComplete='off'
 						/>
 					</div>
 
@@ -140,6 +142,7 @@ const LectureModal: React.FC<LectureModalProps> = ({
 							placeholder='Введите содержание лекции'
 							rows={10}
 							required
+							autoComplete='off'
 						/>
 					</div>
 

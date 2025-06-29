@@ -9,32 +9,35 @@
 	align-items: center;
 	justify-content: center;
 	z-index: 1000;
+	padding: 20px;
 }
 
 .modal {
 	background: #fff;
 	border-radius: 12px;
-	padding: 0;
-	width: 90%;
+	width: 100%;
 	max-width: 600px;
-	max-height: 90vh;
-	overflow-y: auto;
+	max-height: calc(100vh - 40px);
+	display: flex;
+	flex-direction: column;
 	box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+	overflow: hidden;
 }
 
 .modalHeader {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 24px 24px 0 24px;
+	padding: 24px 24px 16px 24px;
 	border-bottom: 1px solid #e5e7eb;
-	margin-bottom: 24px;
+	flex-shrink: 0;
 }
 
 .modalHeader h3 {
 	margin: 0;
 	font-size: 1.25rem;
 	font-weight: 600;
+	color: #111827;
 }
 
 .closeBtn {
@@ -50,15 +53,20 @@
 	align-items: center;
 	justify-content: center;
 	border-radius: 6px;
-	transition: background 0.2s;
+	transition: all 0.2s ease;
 }
 
 .closeBtn:hover {
 	background: #f3f4f6;
+	color: #374151;
+	transform: scale(1.1);
 }
 
 .form {
-	padding: 0 24px 24px 24px;
+	padding: 24px;
+	flex: 1;
+	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 .formGroup {
@@ -70,6 +78,7 @@
 	margin-bottom: 8px;
 	font-weight: 500;
 	color: #374151;
+	font-size: 0.875rem;
 }
 
 .formGroup input,
@@ -78,15 +87,17 @@
 	padding: 10px 12px;
 	border: 1px solid #d1d5db;
 	border-radius: 6px;
-	font-size: 1rem;
-	transition: border-color 0.2s;
+	font-size: 0.875rem;
+	transition: all 0.2s ease;
 	resize: vertical;
+	background: #fff;
 }
 
 .formGroup input:focus,
 .formGroup textarea:focus {
 	outline: none;
-	border-color: #23272f;
+	border-color: #40e0d0;
+	box-shadow: 0 0 0 3px rgba(64, 224, 208, 0.1);
 }
 
 .error {
@@ -96,15 +107,17 @@
 	border-radius: 6px;
 	margin-bottom: 16px;
 	border: 1px solid #fecaca;
+	font-size: 0.875rem;
 }
 
 .modalFooter {
 	display: flex;
 	gap: 12px;
 	justify-content: flex-end;
-	margin-top: 24px;
-	padding-top: 24px;
+	padding: 20px 24px;
 	border-top: 1px solid #e5e7eb;
+	flex-shrink: 0;
+	background: #f9fafb;
 }
 
 .cancelBtn {
@@ -113,13 +126,16 @@
 	border: 1px solid #d1d5db;
 	border-radius: 6px;
 	padding: 10px 20px;
-	font-size: 1rem;
+	font-size: 0.875rem;
+	font-weight: 500;
 	cursor: pointer;
-	transition: background 0.2s;
+	transition: all 0.2s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .cancelBtn:hover {
 	background: #e5e7eb;
+	transform: scale(1.05);
 }
 
 .saveBtn {
@@ -128,16 +144,21 @@
 	border: none;
 	border-radius: 6px;
 	padding: 10px 20px;
-	font-size: 1rem;
+	font-size: 0.875rem;
+	font-weight: 500;
 	cursor: pointer;
-	transition: background 0.2s;
+	transition: all 0.2s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .saveBtn:hover:not(:disabled) {
-	background: #3b4252;
+	background: #40e0d0;
+	transform: scale(1.05);
+	box-shadow: 0 4px 8px rgba(64, 224, 208, 0.3);
 }
 
 .saveBtn:disabled {
 	background: #9ca3af;
 	cursor: not-allowed;
+	transform: none;
 }

@@ -38,6 +38,55 @@ const AdminsPage: React.FC = () => {
 		user?.role === 'superadmin' ||
 		user?.permissions?.includes('manage_admin_permissions')
 
+	// Проверяем, может ли пользователь управлять конкретным администратором
+	const canManageAdmin = (admin: AdminWithPermissions) => {
+		// Суперадмин может управлять всеми (кроме себя)
+		if (user?.role === 'superadmin') return admin.id !== user?.id
+
+		// Админ не может управлять суперадминами
+		if (admin.role === 'superadmin') return false
+
+		// Админ не может управлять собой
+		if (admin.id === user?.id) return false
+
+		// Админ может управлять другими админами, если у него есть права
+		return canManageAdmins
+	}
+
+	// Проверяем, может ли пользователь редактировать разрешения конкретного администратора
+	const canEditAdminPermissions = (admin: AdminWithPermissions) => {
+		// Суперадмин может редактировать всех (кроме себя)
+		if (user?.role === 'superadmin') return admin.id !== user?.id
+
+		// Админ не может редактировать разрешения суперадминов
+		if (admin.role === 'superadmin') return false
+
+		// Админ не может редактировать свои разрешения
+		if (admin.id === user?.id) return false
+
+		// Админ может редактировать разрешения других админов, если у него есть права
+		return canManagePermissions
+	}
+
+	// Проверяем, нужно ли скрыть кнопки для конкретного администратора
+	const shouldHideButtons = (admin: AdminWithPermissions) => {
+		// Суперадмин не видит кнопки у себя
+		if (user?.role === 'superadmin' && admin.id === user?.id) {
+			return true
+		}
+
+		// Админ не видит кнопки у суперадминов и у себя
+		if (user?.role === 'admin') {
+			// Скрываем кнопки для суперадминов
+			if (admin.role === 'superadmin') return true
+
+			// Скрываем кнопки для себя
+			if (admin.id === user?.id) return true
+		}
+
+		return false
+	}
+
 	useEffect(() => {
 		loadAdmins()
 	}, [])
@@ -58,7 +107,7 @@ const AdminsPage: React.FC = () => {
 	}
 
 	const handleEditPermissions = (admin: AdminWithPermissions) => {
-		if (!canManagePermissions) {
+		if (!canEditAdminPermissions(admin)) {
 			setPermissionError({
 				isOpen: true,
 				action: 'управлять правами администраторов',
@@ -81,7 +130,7 @@ const AdminsPage: React.FC = () => {
 	}
 
 	const handleDeleteAdmin = (admin: AdminWithPermissions) => {
-		if (!canManageAdmins) {
+		if (!canManageAdmin(admin)) {
 			setPermissionError({
 				isOpen: true,
 				action: 'удалять администраторов',
@@ -101,8 +150,33 @@ const AdminsPage: React.FC = () => {
 			await loadAdmins()
 			setShowConfirmModal(false)
 			setAdminToDelete(null)
-		} catch (err) {
+		} catch (err: unknown) {
 			console.error('Error deleting admin:', err)
+
+			// Показываем пользователю понятное сообщение об ошибке
+			let errorMessage = 'Ошибка при удалении администратора'
+
+			if (
+				err &&
+				typeof err === 'object' &&
+				'response' in err &&
+				err.response &&
+				typeof err.response === 'object' &&
+				'data' in err.response &&
+				err.response.data &&
+				typeof err.response.data === 'object' &&
+				'message' in err.response.data
+			) {
+				errorMessage = String(err.response.data.message)
+			} else if (err instanceof Error) {
+				errorMessage = err.message
+			}
+
+			setError(errorMessage)
+
+			// Закрываем модальное окно подтверждения
+			setShowConfirmModal(false)
+			setAdminToDelete(null)
 		}
 	}
 
@@ -127,6 +201,9 @@ const AdminsPage: React.FC = () => {
 						<div className={styles.adminInfo}>
 							<h3>
 								{admin.firstName} {admin.lastName}
+								{admin.role === 'superadmin' && (
+									<span className={styles.superadminBadge}>Суперадмин</span>
+								)}
 							</h3>
 							<p>{admin.login}</p>
 							<p className={styles.date}>
@@ -145,19 +222,26 @@ const AdminsPage: React.FC = () => {
 						</div>
 
 						<div className={styles.actions}>
-							<button
-								onClick={() => handleEditPermissions(admin)}
-								className={styles.editButton}
-							>
-								Редактировать разрешения
-							</button>
-							{admin.id !== user?.id && (
+							{!shouldHideButtons(admin) && (
+								<button
+									onClick={() => handleEditPermissions(admin)}
+									className={styles.editButton}
+								>
+									Редактировать разрешения
+								</button>
+							)}
+							{!shouldHideButtons(admin) && (
 								<button
 									onClick={() => handleDeleteAdmin(admin)}
 									className={styles.deleteButton}
 								>
 									Удалить
 								</button>
+							)}
+							{admin.role === 'superadmin' && user?.role !== 'superadmin' && (
+								<p className={styles.protectedNote}>
+									Суперадмин защищен от изменений
+								</p>
 							)}
 						</div>
 					</div>

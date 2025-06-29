@@ -139,6 +139,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 							placeholder='Введите текст вопроса'
 							rows={4}
 							required
+							autoComplete='off'
 						/>
 					</div>
 

@@ -9,32 +9,35 @@
 	align-items: center;
 	justify-content: center;
 	z-index: 1000;
+	padding: 20px;
 }
 
 .modal {
 	background: #fff;
 	border-radius: 12px;
-	padding: 0;
-	width: 90%;
-	max-width: 500px;
-	max-height: 90vh;
-	overflow-y: auto;
+	width: 100%;
+	max-width: 600px;
+	max-height: calc(100vh - 40px);
+	display: flex;
+	flex-direction: column;
 	box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+	overflow: hidden;
 }
 
 .modalHeader {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 24px 24px 0 24px;
+	padding: 24px 24px 16px 24px;
 	border-bottom: 1px solid #e5e7eb;
-	margin-bottom: 24px;
+	flex-shrink: 0;
 }
 
 .modalHeader h3 {
 	margin: 0;
 	font-size: 1.25rem;
 	font-weight: 600;
+	color: #111827;
 }
 
 .closeBtn {
@@ -50,15 +53,20 @@
 	align-items: center;
 	justify-content: center;
 	border-radius: 6px;
-	transition: background 0.2s;
+	transition: all 0.2s ease;
 }
 
 .closeBtn:hover {
 	background: #f3f4f6;
+	color: #374151;
+	transform: scale(1.1);
 }
 
 .modalBody {
-	padding: 0 24px;
+	padding: 24px;
+	flex: 1;
+	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 .error {
@@ -68,6 +76,7 @@
 	border-radius: 6px;
 	margin-bottom: 16px;
 	border: 1px solid #fecaca;
+	font-size: 0.875rem;
 }
 
 .success {
@@ -77,6 +86,7 @@
 	border-radius: 6px;
 	margin-bottom: 16px;
 	border: 1px solid #bbf7d0;
+	font-size: 0.875rem;
 }
 
 .userInfo {
@@ -86,35 +96,49 @@
 .infoRow {
 	display: flex;
 	align-items: center;
-	margin-bottom: 16px;
-	gap: 12px;
+	margin-bottom: 20px;
+	gap: 16px;
+	min-height: 40px;
 }
 
 .infoRow label {
-	min-width: 120px;
+	min-width: 140px;
 	font-weight: 500;
 	color: #374151;
+	font-size: 0.875rem;
+	flex-shrink: 0;
 }
 
 .infoRow span {
 	color: #111827;
 	flex: 1;
+	font-size: 0.875rem;
 }
 
 .infoRow input,
 .infoRow select {
 	flex: 1;
-	padding: 8px 12px;
+	padding: 10px 12px;
 	border: 1px solid #d1d5db;
 	border-radius: 6px;
-	font-size: 1rem;
-	transition: border-color 0.2s;
+	font-size: 0.875rem;
+	transition: all 0.2s ease;
+	background: #fff;
+	min-height: 40px;
 }
 
 .infoRow input:focus,
 .infoRow select:focus {
 	outline: none;
-	border-color: #23272f;
+	border-color: #40e0d0;
+	box-shadow: 0 0 0 3px rgba(64, 224, 208, 0.1);
+}
+
+.infoRow input:disabled,
+.infoRow select:disabled {
+	background: #f9fafb;
+	color: #6b7280;
+	cursor: not-allowed;
 }
 
 .passwordSection {
@@ -127,15 +151,19 @@
 	margin: 0 0 16px 0;
 	color: #374151;
 	font-size: 1rem;
+	font-weight: 600;
 }
 
 .modalFooter {
 	display: flex;
 	gap: 12px;
 	justify-content: flex-end;
-	margin-top: 24px;
-	padding: 24px;
+	padding: 20px 24px;
 	border-top: 1px solid #e5e7eb;
+	flex-shrink: 0;
+	background: #f9fafb;
+	flex-wrap: wrap;
+	align-items: center;
 }
 
 .editBtn {
@@ -144,13 +172,18 @@
 	border: none;
 	border-radius: 6px;
 	padding: 10px 20px;
-	font-size: 1rem;
+	font-size: 0.875rem;
+	font-weight: 500;
 	cursor: pointer;
-	transition: background 0.2s;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+	min-width: 120px;
+	flex-shrink: 0;
 }
 
 .editBtn:hover {
 	background: #bfdbfe;
+	transform: scale(1.05);
 }
 
 .saveBtn {
@@ -159,18 +192,25 @@
 	border: none;
 	border-radius: 6px;
 	padding: 10px 20px;
-	font-size: 1rem;
+	font-size: 0.875rem;
+	font-weight: 500;
 	cursor: pointer;
-	transition: background 0.2s;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+	min-width: 120px;
+	flex-shrink: 0;
 }
 
 .saveBtn:hover:not(:disabled) {
-	background: #3b4252;
+	background: #40e0d0;
+	transform: scale(1.05);
+	box-shadow: 0 4px 8px rgba(64, 224, 208, 0.3);
 }
 
 .saveBtn:disabled {
 	background: #9ca3af;
 	cursor: not-allowed;
+	transform: none;
 }
 
 .cancelBtn {
@@ -179,11 +219,56 @@
 	border: 1px solid #d1d5db;
 	border-radius: 6px;
 	padding: 10px 20px;
-	font-size: 1rem;
+	font-size: 0.875rem;
+	font-weight: 500;
 	cursor: pointer;
-	transition: background 0.2s;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+	min-width: 120px;
+	flex-shrink: 0;
 }
 
 .cancelBtn:hover {
 	background: #e5e7eb;
+	transform: scale(1.05);
+}
+
+.passwordInputWrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+	flex: 1;
+}
+
+.passwordInputWrapper input {
+	flex: 1;
+	padding-right: 40px;
+}
+
+.passwordToggle {
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 4px;
+	transition: background-color 0.2s ease;
+
+	&:hover {
+		background-color: rgba(0, 0, 0, 0.05);
+	}
+}
+
+.passwordToggleIcon {
+	width: 20px;
+	height: 20px;
+	opacity: 0.7;
+	transition: opacity 0.2s ease;
+
+	&:hover {
+		opacity: 1;
+	}
 }

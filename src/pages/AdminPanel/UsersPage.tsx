@@ -79,10 +79,10 @@ const UsersPage: React.FC = () => {
 	}
 
 	const handleEditUser = (user: AdminUser) => {
-		if (!canEditUsers) {
+		if (!canEditUser(user)) {
 			setPermissionError({
 				isOpen: true,
-				action: 'редактировать пользователей',
+				action: 'редактировать этого пользователя',
 			})
 			return
 		}
@@ -132,7 +132,9 @@ const UsersPage: React.FC = () => {
 			throw new Error('Пользователь не выбран')
 		}
 
-		if (!canEditUsers) {
+		// Пользователь может редактировать свои данные по умолчанию
+		const isEditingSelf = currentUser?.id === selectedUser.id
+		if (!isEditingSelf && !canEditUsers) {
 			setPermissionError({
 				isOpen: true,
 				action: 'редактировать пользователей',
@@ -196,11 +198,11 @@ const UsersPage: React.FC = () => {
 	const canEditUser = (user: AdminUser) => {
 		if (!currentUser) return false
 
-		// Пользователь не может редактировать сам себя
-		if (currentUser.id === user.id) return false
-
 		const currentUserRole = currentUser.role?.toLowerCase()
 		const targetUserRole = user.role?.toLowerCase()
+
+		// Пользователь может редактировать свои данные (включая админа)
+		if (currentUser.id === user.id) return true
 
 		// Суперадмин может редактировать всех (кроме себя)
 		if (currentUserRole === 'superadmin') return true

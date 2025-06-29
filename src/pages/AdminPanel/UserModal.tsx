@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
+import passwordClose from '../../assets/passwordClose.png'
+import passwordOpen from '../../assets/passwordOpen.png'
 import { cityNames } from '../../constants/DropDownOptionValuse'
+import usePasswordVisibility from '../../hooks/usePasswordVisibility'
 import { RootState } from '../../store/store'
 import adminApi, { AdminUser } from '../../utils/adminApi'
 import styles from './UserModal.module.scss'
@@ -25,6 +28,8 @@ const UserModal: React.FC<UserModalProps> = ({
 	onSuccess,
 }) => {
 	const currentUser = useSelector((state: RootState) => state.user.user)
+	const { isPasswordVisible, togglePasswordVisibility } =
+		usePasswordVisibility()
 	const [loading, setLoading] = useState(false)
 	const [showPasswordModal, setShowPasswordModal] = useState(false)
 	const [generatedPassword, setGeneratedPassword] = useState('')
@@ -197,6 +202,7 @@ const UserModal: React.FC<UserModalProps> = ({
 							value={formData.firstName}
 							onChange={handleChange}
 							className={errors.firstName ? styles.error : ''}
+							autoComplete='off'
 						/>
 						{errors.firstName && (
 							<span className={styles.errorText}>{errors.firstName}</span>
@@ -212,6 +218,7 @@ const UserModal: React.FC<UserModalProps> = ({
 							value={formData.lastName}
 							onChange={handleChange}
 							className={errors.lastName ? styles.error : ''}
+							autoComplete='off'
 						/>
 						{errors.lastName && (
 							<span className={styles.errorText}>{errors.lastName}</span>
@@ -227,6 +234,7 @@ const UserModal: React.FC<UserModalProps> = ({
 							value={formData.login}
 							onChange={handleChange}
 							className={errors.login ? styles.error : ''}
+							autoComplete='off'
 						/>
 						{errors.login && (
 							<span className={styles.errorText}>{errors.login}</span>
@@ -279,13 +287,27 @@ const UserModal: React.FC<UserModalProps> = ({
 							<label htmlFor='password'>
 								Новый пароль (оставьте пустым, чтобы не изменять)
 							</label>
-							<input
-								type='password'
-								id='password'
-								name='password'
-								value={formData.password}
-								onChange={handleChange}
-							/>
+							<div className={styles.passwordInputWrapper}>
+								<input
+									type={isPasswordVisible ? 'text' : 'password'}
+									id='password'
+									name='password'
+									value={formData.password}
+									onChange={handleChange}
+									autoComplete='off'
+								/>
+								<button
+									type='button'
+									className={styles.passwordToggle}
+									onClick={togglePasswordVisibility}
+								>
+									<img
+										src={isPasswordVisible ? passwordOpen : passwordClose}
+										alt='Показать/скрыть пароль'
+										className={styles.passwordToggleIcon}
+									/>
+								</button>
+							</div>
 						</div>
 					)}
 

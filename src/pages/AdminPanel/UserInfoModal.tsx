@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
+import passwordClose from '../../assets/passwordClose.png'
+import passwordOpen from '../../assets/passwordOpen.png'
 import PermissionErrorModal from '../../components/PermissionErrorModal/PermissionErrorModal'
 import {
 	cityNames,
@@ -32,6 +34,9 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 	startEditing = false,
 }) => {
 	const currentUser = useSelector((state: RootState) => state.user.user)
+	const [isNewPasswordVisible, setIsNewPasswordVisible] = useState(false)
+	const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
+		useState(false)
 	const [isEditing, setIsEditing] = useState(false)
 	const [formData, setFormData] = useState<UpdateUserData>({
 		firstName: '',
@@ -91,6 +96,8 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 			})
 			setNewPassword('')
 			setConfirmPassword('')
+			setIsNewPasswordVisible(false)
+			setIsConfirmPasswordVisible(false)
 			setError('')
 			setSuccess('')
 			setIsEditing(startEditing)
@@ -108,7 +115,9 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 		e.preventDefault()
 
 		// Проверяем права перед сохранением
-		if (!hasPermission(Permission.EDIT_USERS)) {
+		// Пользователь может редактировать свои данные по умолчанию
+		const isEditingSelf = currentUser?.id === user?.id
+		if (!isEditingSelf && !hasPermission(Permission.EDIT_USERS)) {
 			setPermissionError({
 				isOpen: true,
 				action: 'редактировать пользователей',
@@ -159,9 +168,16 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 				city: formData.city.trim(),
 			}
 
-			// Добавляем роль только если она изменилась
+			// Добавляем роль только если она изменилась и пользователь может её изменять
+			// Админ не может изменять свою роль при редактировании своих данных
 			if (formData.role && formData.role !== user?.role) {
-				updateData.role = formData.role
+				const isEditingSelf = currentUser?.id === user?.id
+				const isAdminEditingSelf =
+					isEditingSelf && currentUser?.role === 'admin'
+
+				if (!isAdminEditingSelf) {
+					updateData.role = formData.role
+				}
 			}
 
 			// Добавляем пароль только если он указан
@@ -205,7 +221,9 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 
 	const handleEdit = () => {
 		// Проверяем права перед переходом в режим редактирования
-		if (!hasPermission(Permission.EDIT_USERS)) {
+		// Пользователь может редактировать свои данные по умолчанию
+		const isEditingSelf = currentUser?.id === user?.id
+		if (!isEditingSelf && !hasPermission(Permission.EDIT_USERS)) {
 			setPermissionError({
 				isOpen: true,
 				action: 'редактировать пользователей',
@@ -221,6 +239,8 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 		setIsEditing(false)
 		setNewPassword('')
 		setConfirmPassword('')
+		setIsNewPasswordVisible(false)
+		setIsConfirmPasswordVisible(false)
 		setError('')
 		setSuccess('')
 		// Восстанавливаем исходные данные
@@ -270,6 +290,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 									required
 									readOnly={!isEditing}
 									disabled={!isEditing}
+									autoComplete='off'
 								/>
 							</div>
 
@@ -283,6 +304,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 									required
 									readOnly={!isEditing}
 									disabled={!isEditing}
+									autoComplete='off'
 								/>
 							</div>
 
@@ -296,35 +318,48 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 									required
 									readOnly={!isEditing}
 									disabled={!isEditing}
+									autoComplete='off'
 								/>
 							</div>
 
 							<div className={styles.infoRow}>
 								<label>Роль:</label>
 								{isEditing ? (
-									<select
-										name='role'
-										value={formData.role}
-										onChange={e =>
-											handleChange({
-												...e,
-												target: {
-													...e.target,
-													value: normalizeRoleValue(e.target.value),
-												},
-											})
-										}
-									>
-										{availableRoles.map(role => (
-											<option key={role} value={role}>
-												{
-													roleDisplayNames[
-														role as keyof typeof roleDisplayNames
-													]
-												}
-											</option>
-										))}
-									</select>
+									// Проверяем, может ли пользователь изменять роль
+									// Админ не может изменять свою роль при редактировании своих данных
+									currentUser?.id === user?.id &&
+									currentUser?.role === 'admin' ? (
+										<input
+											type='text'
+											value={getRoleDisplayName(formData.role || '')}
+											readOnly
+											disabled
+										/>
+									) : (
+										<select
+											name='role'
+											value={formData.role}
+											onChange={e =>
+												handleChange({
+													...e,
+													target: {
+														...e.target,
+														value: normalizeRoleValue(e.target.value),
+													},
+												})
+											}
+										>
+											{availableRoles.map(role => (
+												<option key={role} value={role}>
+													{
+														roleDisplayNames[
+															role as keyof typeof roleDisplayNames
+														]
+													}
+												</option>
+											))}
+										</select>
+									)
 								) : (
 									<input
 										type='text'
@@ -389,21 +424,63 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 										<h4>Изменить пароль</h4>
 										<div className={styles.infoRow}>
 											<label>Новый пароль:</label>
-											<input
-												type='password'
-												value={newPassword}
-												onChange={e => setNewPassword(e.target.value)}
-												placeholder='Оставьте пустым, чтобы не менять'
-											/>
+											<div className={styles.passwordInputWrapper}>
+												<input
+													type={isNewPasswordVisible ? 'text' : 'password'}
+													value={newPassword}
+													onChange={e => setNewPassword(e.target.value)}
+													placeholder='Оставьте пустым, чтобы не менять'
+													autoComplete='off'
+												/>
+												<button
+													type='button'
+													className={styles.passwordToggle}
+													onClick={() =>
+														setIsNewPasswordVisible(!isNewPasswordVisible)
+													}
+												>
+													<img
+														src={
+															isNewPasswordVisible
+																? passwordOpen
+																: passwordClose
+														}
+														alt='Показать/скрыть пароль'
+														className={styles.passwordToggleIcon}
+													/>
+												</button>
+											</div>
 										</div>
 										<div className={styles.infoRow}>
 											<label>Подтвердите пароль:</label>
-											<input
-												type='password'
-												value={confirmPassword}
-												onChange={e => setConfirmPassword(e.target.value)}
-												placeholder='Повторите новый пароль'
-											/>
+											<div className={styles.passwordInputWrapper}>
+												<input
+													type={isConfirmPasswordVisible ? 'text' : 'password'}
+													value={confirmPassword}
+													onChange={e => setConfirmPassword(e.target.value)}
+													placeholder='Повторите новый пароль'
+													autoComplete='off'
+												/>
+												<button
+													type='button'
+													className={styles.passwordToggle}
+													onClick={() =>
+														setIsConfirmPasswordVisible(
+															!isConfirmPasswordVisible
+														)
+													}
+												>
+													<img
+														src={
+															isConfirmPasswordVisible
+																? passwordOpen
+																: passwordClose
+														}
+														alt='Показать/скрыть пароль'
+														className={styles.passwordToggleIcon}
+													/>
+												</button>
+											</div>
 										</div>
 									</div>
 								</>
@@ -419,7 +496,7 @@ const UserInfoModal: React.FC<UserInfoModalProps> = ({
 										Редактировать
 									</button>
 								)}
-								<button className={styles.closeBtn} onClick={onClose}>
+								<button className={styles.cancelBtn} onClick={onClose}>
 									Закрыть
 								</button>
 							</>
