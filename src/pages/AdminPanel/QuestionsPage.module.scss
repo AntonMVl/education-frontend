@@ -1,0 +1,207 @@
+.container {
+	padding: 20px;
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+
+	h1 {
+		margin: 0;
+		color: #333;
+		font-size: 24px;
+		font-weight: 600;
+	}
+}
+
+.createBtn {
+	background: #007bff;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 14px;
+	transition: background-color 0.2s;
+
+	&:hover {
+		background: #0056b3;
+	}
+}
+
+.error {
+	background: #f8d7da;
+	color: #721c24;
+	padding: 10px;
+	border-radius: 5px;
+	margin-bottom: 20px;
+	border: 1px solid #f5c6cb;
+}
+
+.searchContainer {
+	margin-bottom: 20px;
+}
+
+.searchInput {
+	width: 100%;
+	max-width: 400px;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	font-size: 14px;
+
+	&:focus {
+		outline: none;
+		border-color: #007bff;
+		box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+	}
+}
+
+.tableContainer {
+	overflow-x: auto;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+}
+
+.table {
+	width: 100%;
+	border-collapse: collapse;
+	background: white;
+
+	th {
+		background: #f8f9fa;
+		padding: 12px 8px;
+		text-align: left;
+		font-weight: 600;
+		color: #333;
+		border-bottom: 2px solid #dee2e6;
+		font-size: 14px;
+	}
+
+	td {
+		padding: 12px 8px;
+		border-bottom: 1px solid #dee2e6;
+		font-size: 14px;
+		vertical-align: middle;
+		color: #333;
+	}
+
+	tr:hover {
+		background: #f8f9fa;
+	}
+
+	tr:last-child td {
+		border-bottom: none;
+	}
+}
+
+.questionText {
+	max-width: 300px;
+	word-wrap: break-word;
+}
+
+.emptyMessage {
+	text-align: center;
+	color: #6c757d;
+	font-style: italic;
+	padding: 40px !important;
+}
+
+.actions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.editBtn {
+	background: #ffc107;
+	color: #212529;
+	border: none;
+	padding: 6px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 12px;
+	transition: background-color 0.2s;
+
+	&:hover {
+		background: #e0a800;
+	}
+}
+
+.deleteBtn {
+	background: #dc3545;
+	color: white;
+	border: none;
+	padding: 6px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 12px;
+	transition: background-color 0.2s;
+
+	&:hover {
+		background: #c82333;
+	}
+}
+
+.loading {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 200px;
+	font-size: 16px;
+	color: #6c757d;
+}
+
+// Адаптивность для мобильных устройств
+@media (max-width: 768px) {
+	.container {
+		padding: 10px;
+	}
+
+	.header {
+		flex-direction: column;
+		gap: 15px;
+		align-items: stretch;
+
+		h1 {
+			text-align: center;
+		}
+	}
+
+	.createBtn {
+		width: 100%;
+	}
+
+	.searchInput {
+		max-width: 100%;
+	}
+
+	.table {
+		font-size: 12px;
+
+		th,
+		td {
+			padding: 8px 4px;
+		}
+	}
+
+	.questionText {
+		max-width: 150px;
+	}
+
+	.actions {
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.editBtn,
+	.deleteBtn {
+		width: 100%;
+		padding: 8px;
+	}
+}

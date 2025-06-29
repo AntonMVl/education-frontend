@@ -1,0 +1,273 @@
+.container {
+	padding: 20px;
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+
+	h1 {
+		margin: 0;
+		color: #333;
+		font-size: 24px;
+		font-weight: 600;
+	}
+}
+
+.createBtn {
+	background: #007bff;
+	color: white;
+	border: none;
+	padding: 12px 24px;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+	&:hover {
+		background: #40e0d0;
+		transform: scale(1.05);
+		box-shadow: 0 4px 8px rgba(64, 224, 208, 0.3);
+	}
+}
+
+.error {
+	background: #f8d7da;
+	color: #721c24;
+	padding: 10px;
+	border-radius: 5px;
+	margin-bottom: 20px;
+	border: 1px solid #f5c6cb;
+}
+
+.searchContainer {
+	margin-bottom: 20px;
+}
+
+.searchInput {
+	width: 100%;
+	max-width: 400px;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	font-size: 14px;
+
+	&:focus {
+		outline: none;
+		border-color: #007bff;
+		box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+	}
+}
+
+.tableContainer {
+	overflow-x: auto;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+}
+
+.table {
+	width: 100%;
+	border-collapse: collapse;
+	background: white;
+
+	th {
+		background: #f8f9fa;
+		padding: 12px 8px;
+		text-align: left;
+		font-weight: 600;
+		color: #333;
+		border-bottom: 2px solid #dee2e6;
+		font-size: 14px;
+	}
+
+	td {
+		padding: 12px 8px;
+		border-bottom: 1px solid #dee2e6;
+		font-size: 14px;
+		vertical-align: middle;
+		color: #333;
+	}
+
+	tr:hover {
+		background: #f8f9fa;
+	}
+}
+
+.userRow {
+	&:last-child td {
+		border-bottom: none;
+	}
+
+	&.roleSeparator {
+		border-top: 2px solid #e5e7eb;
+	}
+}
+
+.roleSeparator {
+	background: #f9fafb;
+
+	td {
+		border-top: 2px solid #e5e7eb;
+		font-weight: 500;
+		color: #6b7280;
+		font-size: 12px;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+}
+
+.emptyMessage {
+	text-align: center;
+	color: #6c757d;
+	font-style: italic;
+	padding: 40px !important;
+}
+
+.role {
+	padding: 4px 8px;
+	border-radius: 12px;
+	font-size: 12px;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.roleSuperAdmin {
+	background: #dc3545;
+	color: white;
+}
+
+.roleAdmin {
+	background: #fd7e14;
+	color: white;
+}
+
+.roleUser {
+	background: #28a745;
+	color: white;
+}
+
+.actions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.infoBtn {
+	background: #17a2b8;
+	color: white;
+	border: none;
+	padding: 8px 12px;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+	&:hover {
+		background: #138496;
+		transform: scale(1.05);
+		box-shadow: 0 4px 8px rgba(19, 132, 150, 0.3);
+	}
+}
+
+.editBtn {
+	background: #ffc107;
+	color: #212529;
+	border: none;
+	padding: 8px 12px;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+	&:hover {
+		background: #e0a800;
+		transform: scale(1.05);
+		box-shadow: 0 4px 8px rgba(224, 168, 0, 0.3);
+	}
+}
+
+.deleteBtn {
+	background: #dc3545;
+	color: white;
+	border: none;
+	padding: 8px 12px;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+	&:hover {
+		background: #c82333;
+		transform: scale(1.05);
+		box-shadow: 0 4px 8px rgba(200, 35, 51, 0.3);
+	}
+}
+
+.loading {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 200px;
+	font-size: 16px;
+	color: #6c757d;
+}
+
+// Адаптивность для мобильных устройств
+@media (max-width: 768px) {
+	.container {
+		padding: 10px;
+	}
+
+	.header {
+		flex-direction: column;
+		gap: 15px;
+		align-items: stretch;
+
+		h1 {
+			text-align: center;
+		}
+	}
+
+	.createBtn {
+		width: 100%;
+	}
+
+	.searchInput {
+		max-width: 100%;
+	}
+
+	.table {
+		font-size: 12px;
+
+		th,
+		td {
+			padding: 8px 4px;
+		}
+	}
+
+	.actions {
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.infoBtn,
+	.editBtn,
+	.deleteBtn {
+		width: 100%;
+		padding: 8px;
+	}
+}

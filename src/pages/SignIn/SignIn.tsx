@@ -7,7 +7,7 @@ import usePasswordVisibility from '../../hooks/usePasswordVisibility'
 import { ISignInProps } from '../../types/api'
 import styles from './signIn.module.scss'
 
-const SignIn: FC<ISignInProps> = ({ login, errorMessage }) => {
+const SignIn: FC<ISignInProps> = ({ login, errorMessage, isPass = false }) => {
 	const [formData, setFormData] = useState({ login: '', password: '' })
 	const { isPasswordVisible, togglePasswordVisibility } =
 		usePasswordVisibility()
@@ -50,7 +50,11 @@ const SignIn: FC<ISignInProps> = ({ login, errorMessage }) => {
 					/>
 				</div>
 				{errorMessage && <p className={styles.signIn__error}>{errorMessage}</p>}
-				<SignButton buttonText='Войти' type='submit' />
+				<SignButton
+					buttonText={isPass ? 'Вход...' : 'Войти'}
+					type='submit'
+					disabled={isPass}
+				/>
 			</form>
 		</section>
 	)

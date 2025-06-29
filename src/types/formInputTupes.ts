@@ -12,6 +12,7 @@ export interface FormInputProps {
 	isPasswordVisible?: boolean
 	onTogglePasswordVisibility?: () => void
 	value?: string
+	minLength?: number
 }
 
 export interface PopupProps {

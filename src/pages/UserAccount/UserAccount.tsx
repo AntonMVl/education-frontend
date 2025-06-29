@@ -16,8 +16,10 @@ const UserAccount: FC = () => {
 	const dispatch = useDispatch()
 	const currentUser = useSelector((state: RootState) => state.user.user)
 	const [isEditing, setIsEditing] = useState<boolean>(false)
-	const [formData, setFormData] = useState<Record<string, string>>({})
-	const [originalData, setOriginalData] = useState<Record<string, string>>({})
+	const [formData, setFormData] = useState<Record<string, string | number>>({})
+	const [originalData, setOriginalData] = useState<
+		Record<string, string | number>
+	>({})
 	const [isChanged, setIsChanged] = useState(false)
 	const [loading, setLoading] = useState(false)
 	const [passwords, setPasswords] = useState({
@@ -35,8 +37,12 @@ const UserAccount: FC = () => {
 	}, [currentUser])
 
 	useEffect(() => {
-		setIsChanged(JSON.stringify(formData) !== JSON.stringify(originalData))
-	}, [formData, originalData])
+		const hasFormChanges =
+			JSON.stringify(formData) !== JSON.stringify(originalData)
+		const hasPasswordChanges =
+			passwords.newPassword !== '' || passwords.confirmNewPassword !== ''
+		setIsChanged(hasFormChanges || hasPasswordChanges)
+	}, [formData, originalData, passwords])
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target
@@ -83,7 +89,7 @@ const UserAccount: FC = () => {
 		const changedFields: Record<string, string> = {}
 		Object.keys(formData).forEach(key => {
 			if (formData[key] !== originalData[key]) {
-				changedFields[key] = formData[key]
+				changedFields[key] = String(formData[key])
 			}
 		})
 		// Если меняется пароль — добавляем его в changedFields
@@ -130,7 +136,7 @@ const UserAccount: FC = () => {
 						titleName='Имя:'
 						inputName='firstName'
 						type='text'
-						value={formData.firstName || ''}
+						value={String(formData.firstName || '')}
 						onChange={handleChange}
 						disabled={!isEditing}
 					/>
@@ -138,7 +144,7 @@ const UserAccount: FC = () => {
 						titleName='Фамилия:'
 						inputName='lastName'
 						type='text'
-						value={formData.lastName || ''}
+						value={String(formData.lastName || '')}
 						onChange={handleChange}
 						disabled={!isEditing}
 					/>
@@ -146,7 +152,7 @@ const UserAccount: FC = () => {
 						titleName='Login:'
 						inputName='login'
 						type='text'
-						value={formData.login || ''}
+						value={String(formData.login || '')}
 						onChange={handleChange}
 						disabled={!isEditing}
 					/>
@@ -155,7 +161,7 @@ const UserAccount: FC = () => {
 					<Dropdown
 						name='Город:'
 						options={cityNames}
-						value={formData.city || ''}
+						value={String(formData.city || '')}
 						disabled={!isEditing}
 						onChange={handleDropdownChange}
 					/>
