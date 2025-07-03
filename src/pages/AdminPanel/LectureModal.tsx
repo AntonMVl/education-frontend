@@ -3,6 +3,8 @@ import {
 	CreateLectureData,
 	Lecture,
 	UpdateLectureData,
+	createLecture,
+	updateLecture,
 } from '../../utils/lecturesApi'
 import styles from './LectureModal.module.scss'
 
@@ -19,42 +21,60 @@ const LectureModal: React.FC<LectureModalProps> = ({
 	lecture,
 	onSave,
 }) => {
-	const [formData, setFormData] = useState<CreateLectureData>({
+	const [formData, setFormData] = useState({
 		title: '',
-		description: '',
 		content: '',
-		order: 1,
+		courseId: '',
+		pdf_file: '',
+		has_test: false,
 	})
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState('')
+	const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
 	useEffect(() => {
 		if (lecture) {
 			setFormData({
 				title: lecture.title,
-				description: lecture.description,
-				content: lecture.content,
-				order: lecture.order,
+				content: lecture.content || '',
+				courseId: lecture.courseId,
+				pdf_file: lecture.pdf_file || '',
+				has_test: lecture.has_test,
 			})
 		} else {
 			setFormData({
 				title: '',
-				description: '',
 				content: '',
-				order: 1,
+				courseId: '',
+				pdf_file: '',
+				has_test: false,
 			})
 		}
 		setError('')
+		setSelectedFile(null)
 	}, [lecture, isOpen])
 
 	const handleInputChange = (
-		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
 	) => {
-		const { name, value } = e.target
+		const { name, value, type } = e.target
 		setFormData(prev => ({
 			...prev,
-			[name]: name === 'order' ? parseInt(value) || 1 : value,
+			[name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
 		}))
+	}
+
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0]
+		if (file) {
+			if (file.type === 'application/pdf') {
+				setSelectedFile(file)
+				setError('')
+			} else {
+				setError('Пожалуйста, выберите PDF файл')
+				setSelectedFile(null)
+			}
+		}
 	}
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -65,19 +85,29 @@ const LectureModal: React.FC<LectureModalProps> = ({
 			return
 		}
 
-		if (!formData.description.trim()) {
-			setError('Описание лекции обязательно')
+		if (!formData.courseId) {
+			setError('Выберите курс для лекции')
 			return
 		}
 
-		if (!formData.content.trim()) {
-			setError('Содержание лекции обязательно')
+		// Проверяем, что есть либо выбранный файл, либо существующий PDF
+		if (!selectedFile && !lecture?.pdf_file) {
+			setError('PDF файл лекции обязателен')
 			return
 		}
 
 		try {
 			setLoading(true)
 			setError('')
+			
+			if (lecture) {
+				// Обновление существующей лекции
+				await updateLecture(lecture.id, formData, selectedFile || undefined)
+			} else {
+				// Создание новой лекции
+				await createLecture(formData, selectedFile || undefined)
+			}
+			
 			await onSave(formData)
 			onClose()
 		} catch (error) {
@@ -119,44 +149,54 @@ const LectureModal: React.FC<LectureModalProps> = ({
 					</div>
 
 					<div className={styles.formGroup}>
-						<label htmlFor='description'>Описание *</label>
-						<textarea
-							id='description'
-							name='description'
-							value={formData.description}
+						<label htmlFor='courseId'>Курс *</label>
+						<select
+							id='courseId'
+							name='courseId'
+							value={formData.courseId}
 							onChange={handleInputChange}
-							placeholder='Введите краткое описание лекции'
-							rows={3}
 							required
-							autoComplete='off'
-						/>
+						>
+							<option value=''>Выберите курс</option>
+							<option value='1'>Дактилоскопия</option>
+							<option value='2'>Трасология</option>
+						</select>
 					</div>
 
 					<div className={styles.formGroup}>
-						<label htmlFor='content'>Содержание лекции *</label>
-						<textarea
-							id='content'
-							name='content'
-							value={formData.content}
-							onChange={handleInputChange}
-							placeholder='Введите содержание лекции'
-							rows={10}
-							required
-							autoComplete='off'
-						/>
-					</div>
-
-					<div className={styles.formGroup}>
-						<label htmlFor='order'>Порядковый номер</label>
+						<label htmlFor='pdf_file'>PDF файл лекции *</label>
 						<input
-							type='number'
-							id='order'
-							name='order'
-							value={formData.order}
-							onChange={handleInputChange}
-							min='1'
-							placeholder='1'
+							type='file'
+							id='pdf_file'
+							name='pdf_file'
+							accept='.pdf'
+							onChange={handleFileChange}
+							required={!lecture?.pdf_file}
 						/>
+						{selectedFile && (
+							<p className={styles.fileInfo}>Выбран файл: {selectedFile.name}</p>
+						)}
+						{lecture?.pdf_file && !selectedFile && (
+							<p className={styles.fileInfo}>
+								Текущий файл: {lecture.pdf_file.split('/').pop()}
+							</p>
+						)}
+						<p className={styles.fileHint}>
+							📄 PDF файл является основным содержанием лекции
+						</p>
+					</div>
+
+					<div className={styles.formGroup}>
+						<label htmlFor='has_test' className={styles.checkboxLabel}>
+							<input
+								type='checkbox'
+								id='has_test'
+								name='has_test'
+								checked={formData.has_test}
+								onChange={handleInputChange}
+							/>
+							Лекция предусматривает прохождение тестирования
+						</label>
 					</div>
 
 					<div className={styles.formActions}>

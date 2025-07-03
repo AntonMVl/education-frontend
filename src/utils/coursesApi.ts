@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:3000/api'
+const API_BASE_URL = 'http://localhost:3001/api'
 
 // Типы для курсов
 export interface Course {
@@ -40,7 +40,7 @@ export interface UpdateCourseData {
 export const getAvailableCourses = async () => {
 	const token = localStorage.getItem('jwt')
 	const response = await axios.get(
-		`${API_BASE_URL}/user-progress/courses/available`,
+		`${API_BASE_URL}/user-progress/courses`,
 		{
 			headers: {
 				Authorization: `Bearer ${token}`,
@@ -105,7 +105,7 @@ export const deleteCourse = async (courseId: string) => {
 export const getCourseProgress = async (courseId: string) => {
 	const token = localStorage.getItem('jwt')
 	const response = await axios.get(
-		`${API_BASE_URL}/user-progress/course/${courseId}/progress`,
+		`${API_BASE_URL}/user-progress/course/${courseId}`,
 		{
 			headers: {
 				Authorization: `Bearer ${token}`,
@@ -119,7 +119,7 @@ export const getCourseProgress = async (courseId: string) => {
 export const getOverallProgress = async () => {
 	const token = localStorage.getItem('jwt')
 	const response = await axios.get(
-		`${API_BASE_URL}/user-progress/overall-progress`,
+		`${API_BASE_URL}/user-progress/overall`,
 		{
 			headers: {
 				Authorization: `Bearer ${token}`,

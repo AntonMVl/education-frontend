@@ -90,6 +90,29 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 		}))
 	}
 
+	const addAnswer = () => {
+		setFormData(prev => ({
+			...prev,
+			answers: [...prev.answers, { text: '', isCorrect: false }],
+		}))
+	}
+
+	const removeAnswer = (index: number) => {
+		setFormData(prev => ({
+			...prev,
+			answers: prev.answers.filter((_, i) => i !== index),
+		}))
+	}
+
+	const updateAnswer = (index: number, field: 'text' | 'isCorrect', value: string | boolean) => {
+		setFormData(prev => ({
+			...prev,
+			answers: prev.answers.map((answer, i) =>
+				i === index ? { ...answer, [field]: value } : answer
+			),
+		}))
+	}
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 
@@ -100,6 +123,21 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 
 		if (!formData.lectureId) {
 			setError('Выберите лекцию')
+			return
+		}
+
+		if (formData.answers.length < 2) {
+			setError('Добавьте минимум 2 варианта ответа')
+			return
+		}
+
+		if (formData.answers.some(answer => !answer.text.trim())) {
+			setError('Все варианты ответов должны быть заполнены')
+			return
+		}
+
+		if (!formData.answers.some(answer => answer.isCorrect)) {
+			setError('Выберите хотя бы один правильный ответ')
 			return
 		}
 
@@ -161,6 +199,45 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 							required
 							autoComplete='off'
 						/>
+					</div>
+
+					<div className={styles.formGroup}>
+						<label>Варианты ответов *</label>
+						<div className={styles.answersContainer}>
+							{formData.answers.map((answer, index) => (
+								<div key={index} className={styles.answerItem}>
+									<input
+										type='text'
+										value={answer.text}
+										onChange={e => updateAnswer(index, 'text', e.target.value)}
+										placeholder={`Вариант ответа ${index + 1}`}
+										className={styles.answerInput}
+									/>
+									<label className={styles.correctLabel}>
+										<input
+											type='checkbox'
+											checked={answer.isCorrect}
+											onChange={e => updateAnswer(index, 'isCorrect', e.target.checked)}
+										/>
+										Правильный
+									</label>
+									<button
+										type='button'
+										onClick={() => removeAnswer(index)}
+										className={styles.removeAnswerBtn}
+									>
+										×
+									</button>
+								</div>
+							))}
+							<button
+								type='button'
+								onClick={addAnswer}
+								className={styles.addAnswerBtn}
+							>
+								+ Добавить вариант ответа
+							</button>
+						</div>
 					</div>
 
 					<div className={styles.formActions}>

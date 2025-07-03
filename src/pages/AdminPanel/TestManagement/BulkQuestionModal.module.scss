@@ -1,0 +1,367 @@
+.modalOverlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+	padding: 20px;
+}
+
+.modal {
+	background: #fff;
+	border-radius: 12px;
+	width: 100%;
+	max-width: 800px;
+	max-height: calc(100vh - 40px);
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+	overflow: hidden;
+}
+
+.modalHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 24px 24px 16px 24px;
+	border-bottom: 1px solid #e5e7eb;
+	flex-shrink: 0;
+}
+
+.modalHeader h2 {
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: 600;
+	color: #111827;
+}
+
+.closeBtn {
+	background: none;
+	border: none;
+	font-size: 1.5rem;
+	cursor: pointer;
+	color: #6b7280;
+	padding: 0;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	transition: all 0.2s ease;
+}
+
+.closeBtn:hover {
+	background: #f3f4f6;
+	color: #374151;
+	transform: scale(1.1);
+}
+
+.form {
+	padding: 24px;
+	flex: 1;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.formGroup {
+	margin-bottom: 20px;
+}
+
+.formGroup label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 500;
+	color: #374151;
+	font-size: 0.875rem;
+}
+
+.formGroup select {
+	width: 100%;
+	padding: 10px 12px;
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	font-size: 0.875rem;
+	transition: all 0.2s ease;
+	background: #fff;
+}
+
+.formGroup select:focus {
+	outline: none;
+	border-color: #40e0d0;
+	box-shadow: 0 0 0 3px rgba(64, 224, 208, 0.1);
+}
+
+.questionsSection {
+	margin-top: 24px;
+}
+
+.questionsHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
+	padding-bottom: 12px;
+	border-bottom: 2px solid #e5e7eb;
+}
+
+.questionsHeader h3 {
+	margin: 0;
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: #111827;
+}
+
+.addQuestionBtn {
+	background: #10b981;
+	color: white;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 6px;
+	cursor: pointer;
+	font-weight: 500;
+	font-size: 0.875rem;
+	transition: all 0.2s ease;
+}
+
+.addQuestionBtn:hover {
+	background: #059669;
+	transform: translateY(-1px);
+}
+
+.questionBlock {
+	background: #f9fafb;
+	border: 2px solid #e5e7eb;
+	border-radius: 8px;
+	margin-bottom: 16px;
+	padding: 16px;
+	transition: all 0.2s ease;
+}
+
+.questionBlock:hover {
+	border-color: #40e0d0;
+	box-shadow: 0 2px 8px rgba(64, 224, 208, 0.1);
+}
+
+.questionHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 12px;
+}
+
+.questionHeader h4 {
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 600;
+	color: #374151;
+}
+
+.removeQuestionBtn {
+	background: #ef4444;
+	color: white;
+	border: none;
+	padding: 4px 8px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 0.75rem;
+	transition: all 0.2s ease;
+}
+
+.removeQuestionBtn:hover {
+	background: #dc2626;
+	transform: scale(1.05);
+}
+
+.questionContent textarea {
+	width: 100%;
+	padding: 10px 12px;
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	font-size: 0.875rem;
+	transition: all 0.2s ease;
+	resize: vertical;
+	background: #fff;
+	margin-bottom: 12px;
+}
+
+.questionContent textarea:focus {
+	outline: none;
+	border-color: #40e0d0;
+	box-shadow: 0 0 0 3px rgba(64, 224, 208, 0.1);
+}
+
+.answersSection {
+	margin-top: 12px;
+}
+
+.answersSection label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 500;
+	color: #374151;
+	font-size: 0.875rem;
+}
+
+.answerRow {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 8px;
+	padding: 8px;
+	background: white;
+	border-radius: 6px;
+	border: 1px solid #e5e7eb;
+}
+
+.answerRow input[type="text"] {
+	flex: 1;
+	padding: 8px 12px;
+	border: 1px solid #d1d5db;
+	border-radius: 4px;
+	font-size: 0.875rem;
+	transition: all 0.2s ease;
+}
+
+.answerRow input[type="text"]:focus {
+	outline: none;
+	border-color: #40e0d0;
+	box-shadow: 0 0 0 2px rgba(64, 224, 208, 0.1);
+}
+
+.correctCheckbox {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	cursor: pointer;
+	font-size: 0.875rem;
+	color: #374151;
+	white-space: nowrap;
+}
+
+.correctCheckbox input[type="checkbox"] {
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+}
+
+.error {
+	background: #fee2e2;
+	color: #dc2626;
+	padding: 12px 16px;
+	border-radius: 6px;
+	margin-bottom: 16px;
+	border: 1px solid #fecaca;
+	font-size: 0.875rem;
+}
+
+.formActions {
+	display: flex;
+	gap: 12px;
+	justify-content: flex-end;
+	padding: 20px 24px;
+	border-top: 1px solid #e5e7eb;
+	flex-shrink: 0;
+	background: #f9fafb;
+}
+
+.cancelButton {
+	background: #f3f4f6;
+	color: #374151;
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	padding: 10px 20px;
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cancelButton:hover:not(:disabled) {
+	background: #e5e7eb;
+	transform: scale(1.05);
+}
+
+.cancelButton:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+	transform: none;
+}
+
+.saveButton {
+	background: #23272f;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	padding: 10px 20px;
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.saveButton:hover:not(:disabled) {
+	background: #40e0d0;
+	transform: scale(1.05);
+	box-shadow: 0 4px 8px rgba(64, 224, 208, 0.3);
+}
+
+.saveButton:disabled {
+	background: #9ca3af;
+	cursor: not-allowed;
+	transform: none;
+}
+
+// Адаптивность
+@media (max-width: 768px) {
+	.modal {
+		max-width: 95vw;
+		margin: 10px;
+	}
+
+	.modalHeader {
+		padding: 16px;
+	}
+
+	.modalHeader h2 {
+		font-size: 1.25rem;
+	}
+
+	.form {
+		padding: 16px;
+	}
+
+	.questionsHeader {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+
+	.questionHeader {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+	}
+
+	.answerRow {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 8px;
+	}
+
+	.correctCheckbox {
+		justify-content: center;
+	}
+
+	.formActions {
+		flex-direction: column;
+		padding: 16px;
+	}
+} 

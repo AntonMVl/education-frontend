@@ -51,6 +51,8 @@ const LectureStudy: React.FC = () => {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 	const [isAvailable, setIsAvailable] = useState(false)
+	const [isPdfFullscreen, setIsPdfFullscreen] = useState(false)
+	const [pdfLoading, setPdfLoading] = useState(true)
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -60,9 +62,7 @@ const LectureStudy: React.FC = () => {
 				// Проверяем доступность лекции
 				const availability = await checkLectureAvailability(lectureId)
 				if (!availability.isAvailable) {
-					setError(
-						'Эта лекция пока недоступна. Сначала завершите предыдущие лекции.'
-					)
+					setError(availability.message || 'Эта лекция пока недоступна. Сначала завершите предыдущие лекции.')
 					setLoading(false)
 					return
 				}
@@ -87,6 +87,20 @@ const LectureStudy: React.FC = () => {
 
 		fetchData()
 	}, [lectureId])
+
+	// Обработчик клавиши Escape для выхода из полноэкранного режима
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Escape' && isPdfFullscreen) {
+				setIsPdfFullscreen(false)
+			}
+		}
+
+		document.addEventListener('keydown', handleKeyDown)
+		return () => {
+			document.removeEventListener('keydown', handleKeyDown)
+		}
+	}, [isPdfFullscreen])
 
 	const handleStartTest = () => {
 		if (lecture?.has_test) {
@@ -148,8 +162,22 @@ const LectureStudy: React.FC = () => {
 
 	const handleDownloadPDF = () => {
 		if (lecture?.pdf_file) {
-			window.open(lecture.pdf_file, '_blank')
+			const fullUrl = `http://localhost:3001${lecture.pdf_file}`
+			window.open(fullUrl, '_blank')
 		}
+	}
+
+	const handlePdfLoad = () => {
+		setPdfLoading(false)
+	}
+
+	const togglePdfFullscreen = () => {
+		setIsPdfFullscreen(!isPdfFullscreen)
+	}
+
+	const handlePdfError = () => {
+		setPdfLoading(false)
+		setError('Ошибка при загрузке PDF файла')
 	}
 
 	if (loading) {
@@ -190,31 +218,60 @@ const LectureStudy: React.FC = () => {
 
 				{currentStep === 'study' && (
 					<div className={styles.studySection}>
-						<div className={styles.content}>
-							<div className={styles.textContent}>
-								<h2>Содержание лекции</h2>
-								<div dangerouslySetInnerHTML={{ __html: lecture.content }} />
-							</div>
-
-							{lecture.pdf_file && (
-								<div className={styles.pdfSection}>
-									<h3>Дополнительные материалы</h3>
-									<button
-										onClick={handleDownloadPDF}
-										className={styles.downloadButton}
-									>
-										📄 Скачать PDF лекции
-									</button>
+						{lecture.pdf_file ? (
+							<div className={styles.pdfSection}>
+								<div className={styles.pdfHeader}>
+									<h3>📄 Материалы лекции</h3>
+									<div className={styles.pdfControls}>
+										<button
+											onClick={togglePdfFullscreen}
+											className={styles.fullscreenBtn}
+											title={isPdfFullscreen ? "Выйти из полноэкранного режима (Esc)" : "Полноэкранный режим"}
+										>
+											{isPdfFullscreen ? "⤓" : "⤢"}
+										</button>
+										<button
+											onClick={handleDownloadPDF}
+											className={styles.downloadBtn}
+											title="Скачать PDF"
+										>
+											📥 Скачать
+										</button>
+									</div>
 								</div>
-							)}
-						</div>
+								
+								<div className={`${styles.pdfContainer} ${isPdfFullscreen ? styles.fullscreen : ''}`}>
+									{pdfLoading && (
+										<div className={styles.pdfLoading}>
+											<div className={styles.spinner}></div>
+											<p>Загрузка материалов лекции...</p>
+										</div>
+									)}
+									<iframe
+										src={`http://localhost:3001${lecture.pdf_file}`}
+										title="PDF лекции"
+										className={styles.pdfViewer}
+										onLoad={handlePdfLoad}
+										onError={handlePdfError}
+										style={{ display: pdfLoading ? 'none' : 'block' }}
+									/>
+								</div>
+							</div>
+						) : (
+							<div className={styles.noPdfSection}>
+								<div className={styles.noPdfContent}>
+									<h3>📄 Материалы лекции</h3>
+									<p>Для этой лекции материалы пока не загружены.</p>
+								</div>
+							</div>
+						)}
 
 						<div className={styles.actions}>
 							<button
 								onClick={handleStartTest}
-								className={styles.continueButton}
+								className={styles.startTestBtn}
 							>
-								{lecture.has_test ? 'Начать тест' : 'Продолжить обучение'}
+								{lecture.has_test ? 'Начать тест' : 'Завершить лекцию'}
 							</button>
 						</div>
 					</div>
@@ -223,30 +280,24 @@ const LectureStudy: React.FC = () => {
 				{currentStep === 'test' && (
 					<div className={styles.testSection}>
 						<h2>Тест по лекции</h2>
-						<p className={styles.testInfo}>
-							Ответьте на все вопросы. Для прохождения теста все ответы должны
-							быть правильными.
-						</p>
+						<p>Ответьте на все вопросы. Для прохождения теста необходимо ответить правильно на все вопросы.</p>
 
 						<div className={styles.questions}>
 							{questions.map((question, index) => (
-								<div key={question.id} className={styles.questionCard}>
-									<h3 className={styles.questionTitle}>
-										Вопрос {index + 1}: {question.text}
-									</h3>
+								<div key={question.id} className={styles.question}>
+									<h3>Вопрос {index + 1}</h3>
+									<p>{question.text}</p>
 									<div className={styles.answers}>
-										{question.answers.map(answer => (
-											<label key={answer.id} className={styles.answerOption}>
+										{question.answers.map((answer) => (
+											<label key={answer.id} className={styles.answer}>
 												<input
-													type='radio'
+													type="radio"
 													name={question.id}
 													value={answer.id}
 													checked={selectedAnswers[question.id] === answer.id}
-													onChange={() =>
-														handleAnswerSelect(question.id, answer.id)
-													}
+													onChange={() => handleAnswerSelect(question.id, answer.id)}
 												/>
-												<span className={styles.answerText}>{answer.text}</span>
+												<span>{answer.text}</span>
 											</label>
 										))}
 									</div>
@@ -257,10 +308,8 @@ const LectureStudy: React.FC = () => {
 						<div className={styles.testActions}>
 							<button
 								onClick={handleSubmitTest}
-								disabled={
-									Object.keys(selectedAnswers).length < questions.length
-								}
-								className={styles.submitButton}
+								className={styles.submitTestBtn}
+								disabled={Object.keys(selectedAnswers).length < questions.length}
 							>
 								Завершить тест
 							</button>
@@ -271,41 +320,28 @@ const LectureStudy: React.FC = () => {
 				{currentStep === 'result' && testResult && (
 					<div className={styles.resultSection}>
 						<h2>Результаты теста</h2>
-
 						{testResult.passed ? (
-							<div className={styles.successResult}>
-								<div className={styles.successIcon}>✅</div>
-								<h3>Поздравляем! Тест пройден успешно!</h3>
-								<p>Вы правильно ответили на все вопросы.</p>
+							<div className={styles.success}>
+								<p>🎉 Поздравляем! Вы успешно прошли тест!</p>
+								<p>Результат: {testResult.score}%</p>
 								<button
 									onClick={handleCompleteLecture}
-									className={styles.continueButton}
+									className={styles.completeBtn}
 								>
-									Продолжить обучение
+									Завершить лекцию
 								</button>
 							</div>
 						) : (
-							<div className={styles.failedResult}>
-								<div className={styles.failedIcon}>❌</div>
-								<h3>Тест не пройден</h3>
-								<p>
-									Вы допустили ошибки. Рекомендуется повторить изучение лекции и
-									пройти тест заново.
-								</p>
-								<div className={styles.retryActions}>
-									<button
-										onClick={() => setCurrentStep('study')}
-										className={styles.retryButton}
-									>
-										Повторить изучение
-									</button>
-									<button
-										onClick={handleRetryTest}
-										className={styles.retryButton}
-									>
-										Пройти тест заново
-									</button>
-								</div>
+							<div className={styles.failure}>
+								<p>❌ К сожалению, вы не прошли тест.</p>
+								<p>Результат: {testResult.score}%</p>
+								<p>Для прохождения необходимо ответить правильно на все вопросы.</p>
+								<button
+									onClick={handleRetryTest}
+									className={styles.retryBtn}
+								>
+									Попробовать снова
+								</button>
 							</div>
 						)}
 					</div>

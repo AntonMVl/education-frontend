@@ -271,3 +271,39 @@
 		padding: 8px;
 	}
 }
+
+.progressContainer {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 120px;
+}
+
+.progressBar {
+	width: 60px;
+	height: 8px;
+	background: #e9ecef;
+	border-radius: 4px;
+	overflow: hidden;
+	flex-shrink: 0;
+}
+
+.progressFill {
+	height: 100%;
+	background: linear-gradient(90deg, #40e0d0, #007bff);
+	border-radius: 4px;
+	transition: width 0.3s ease;
+}
+
+.progressText {
+	font-size: 12px;
+	font-weight: 500;
+	color: #495057;
+	min-width: 30px;
+	text-align: right;
+}
+
+.noProgress {
+	color: #6c757d;
+	font-style: italic;
+}

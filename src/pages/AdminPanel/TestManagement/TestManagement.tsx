@@ -7,28 +7,29 @@ import {
 	getQuestionsByLecture,
 	updateQuestion,
 } from '../../../utils/questionsApi'
+import BulkQuestionModal from './BulkQuestionModal'
 import styles from './TestManagement.module.scss'
 
 interface Lecture {
 	id: string
 	title: string
-	course: {
+	course?: {
 		id: string
 		title: string
 	}
 }
 
 interface Answer {
-	id: string
+	id: number
 	text: string
 	is_correct: boolean
 }
 
 interface Question {
-	id: string
+	id: number
 	text: string
-	lecture: Lecture
-	answers: Answer[]
+	lecture?: Lecture
+	answers?: Answer[]
 }
 
 const TestManagement: React.FC = () => {
@@ -37,6 +38,7 @@ const TestManagement: React.FC = () => {
 	const [loading, setLoading] = useState(true)
 	const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
 	const [showForm, setShowForm] = useState(false)
+	const [showBulkModal, setShowBulkModal] = useState(false)
 	const [selectedLectureId, setSelectedLectureId] = useState<string>('')
 	const [formData, setFormData] = useState({
 		text: '',
@@ -113,7 +115,7 @@ const TestManagement: React.FC = () => {
 
 		try {
 			if (editingQuestion) {
-				await updateQuestion(editingQuestion.id, formData)
+				await updateQuestion(editingQuestion.id.toString(), formData)
 			} else {
 				await createQuestion(formData)
 			}
@@ -132,11 +134,16 @@ const TestManagement: React.FC = () => {
 		setEditingQuestion(question)
 		setFormData({
 			text: question.text,
-			lectureId: question.lecture.id,
-			answers: question.answers.map(answer => ({
+			lectureId: question.lecture?.id || '',
+			answers: question.answers?.map(answer => ({
 				text: answer.text,
 				isCorrect: answer.is_correct,
-			})),
+			})) || [
+				{ text: '', isCorrect: false },
+				{ text: '', isCorrect: false },
+				{ text: '', isCorrect: false },
+				{ text: '', isCorrect: false },
+			],
 		})
 		setShowForm(true)
 	}
@@ -144,14 +151,35 @@ const TestManagement: React.FC = () => {
 	const handleDelete = async (questionId: string) => {
 		if (window.confirm('Вы уверены, что хотите удалить этот вопрос?')) {
 			try {
+				console.log('Попытка удаления вопроса с ID:', questionId)
 				await deleteQuestion(questionId)
+				console.log('Вопрос успешно удален')
+				
+				// Обновляем список вопросов
 				if (selectedLectureId) {
-					fetchQuestionsByLecture(selectedLectureId)
+					await fetchQuestionsByLecture(selectedLectureId)
 				} else {
-					fetchQuestions()
+					await fetchQuestions()
 				}
 			} catch (error) {
 				console.error('Ошибка при удалении вопроса:', error)
+				
+				// Показываем пользователю понятное сообщение об ошибке
+				let errorMessage = 'Ошибка при удалении вопроса'
+				
+				if (error instanceof Error) {
+					if (error.message.includes('404')) {
+						errorMessage = 'Вопрос не найден. Возможно, он уже был удален.'
+					} else if (error.message.includes('403')) {
+						errorMessage = 'У вас нет прав для удаления вопросов.'
+					} else if (error.message.includes('401')) {
+						errorMessage = 'Необходима авторизация. Пожалуйста, войдите в систему.'
+					} else {
+						errorMessage = error.message
+					}
+				}
+				
+				alert(errorMessage)
 			}
 		}
 	}
@@ -181,6 +209,14 @@ const TestManagement: React.FC = () => {
 		setShowForm(false)
 	}
 
+	const refreshQuestions = async () => {
+		if (selectedLectureId) {
+			await fetchQuestionsByLecture(selectedLectureId)
+		} else {
+			await fetchQuestions()
+		}
+	}
+
 	if (loading) {
 		return <div className={styles.loading}>Загрузка вопросов...</div>
 	}
@@ -189,9 +225,14 @@ const TestManagement: React.FC = () => {
 		<div className={styles.testManagement}>
 			<div className={styles.header}>
 				<h1>Управление тестами</h1>
-				<button className={styles.addButton} onClick={() => setShowForm(true)}>
-					+ Добавить вопрос
-				</button>
+				<div className={styles.headerButtons}>
+					<button className={styles.bulkAddButton} onClick={() => setShowBulkModal(true)}>
+						📝 Массовое добавление
+					</button>
+					<button className={styles.addButton} onClick={() => setShowForm(true)}>
+						+ Добавить вопрос
+					</button>
+				</div>
 			</div>
 
 			<div className={styles.filters}>
@@ -203,7 +244,7 @@ const TestManagement: React.FC = () => {
 					<option value=''>Все лекции</option>
 					{lectures.map(lecture => (
 						<option key={lecture.id} value={lecture.id}>
-							{lecture.course.title} - {lecture.title}
+							{lecture.course?.title || 'Без курса'} - {lecture.title}
 						</option>
 					))}
 				</select>
@@ -228,7 +269,7 @@ const TestManagement: React.FC = () => {
 									<option value=''>Выберите лекцию</option>
 									{lectures.map(lecture => (
 										<option key={lecture.id} value={lecture.id}>
-											{lecture.course.title} - {lecture.title}
+											{lecture.course?.title || 'Без курса'} - {lecture.title}
 										</option>
 									))}
 								</select>
@@ -293,10 +334,10 @@ const TestManagement: React.FC = () => {
 						<div className={styles.questionInfo}>
 							<h3>{question.text}</h3>
 							<p className={styles.lectureName}>
-								{question.lecture.course.title} - {question.lecture.title}
+								{question.lecture?.course?.title || 'Без курса'} - {question.lecture?.title || 'Без названия'}
 							</p>
 							<div className={styles.answersList}>
-								{question.answers.map((answer, index) => (
+								{question.answers?.map((answer, index) => (
 									<div
 										key={answer.id}
 										className={`${styles.answerItem} ${
@@ -320,7 +361,7 @@ const TestManagement: React.FC = () => {
 								Редактировать
 							</button>
 							<button
-								onClick={() => handleDelete(question.id)}
+								onClick={() => handleDelete(question.id.toString())}
 								className={styles.deleteButton}
 							>
 								Удалить
@@ -335,6 +376,13 @@ const TestManagement: React.FC = () => {
 					<p>Вопросы пока не добавлены</p>
 				</div>
 			)}
+
+			<BulkQuestionModal
+				isOpen={showBulkModal}
+				onClose={() => setShowBulkModal(false)}
+				lectures={lectures}
+				onSave={refreshQuestions}
+			/>
 		</div>
 	)
 }

@@ -1,16 +1,24 @@
 import { apiUrl } from '../constants/urlConstants'
 
 export interface Answer {
-	id: string
+	id: number
 	text: string
-	isCorrect: boolean
-	questionId: string
+	is_correct: boolean
+	questionId: number
 }
 
 export interface Question {
-	id: string
+	id: number
 	text: string
 	lectureId: string
+	lecture?: {
+		id: string
+		title: string
+		course?: {
+			id: string
+			title: string
+		}
+	}
 	answers: Answer[]
 	createdAt: string
 	updatedAt: string
@@ -131,7 +139,9 @@ export const deleteQuestion = async (questionId: string) => {
 	})
 
 	if (!response.ok) {
-		throw new Error('Ошибка при удалении вопроса')
+		const errorData = await response.json().catch(() => ({}))
+		const errorMessage = errorData.message || `Ошибка ${response.status}: ${response.statusText}`
+		throw new Error(errorMessage)
 	}
 
 	return response.json()

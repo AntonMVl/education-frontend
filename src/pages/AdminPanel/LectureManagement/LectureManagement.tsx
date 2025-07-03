@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { getCourses } from '../../../utils/coursesApi'
 import {
-	createLecture,
 	deleteLecture,
 	getLectures,
 	getLecturesByCourse,
-	updateLecture,
 } from '../../../utils/lecturesApi'
+import LectureModal from '../LectureModal'
 import styles from './LectureManagement.module.scss'
 
 interface Course {
@@ -19,8 +18,12 @@ interface Lecture {
 	title: string
 	content: string
 	course: Course
+	courseId: string
 	pdf_file?: string
+	has_test: boolean
 	images: any[]
+	createdAt: string
+	updatedAt: string
 }
 
 const LectureManagement: React.FC = () => {
@@ -28,13 +31,8 @@ const LectureManagement: React.FC = () => {
 	const [courses, setCourses] = useState<Course[]>([])
 	const [loading, setLoading] = useState(true)
 	const [editingLecture, setEditingLecture] = useState<Lecture | null>(null)
-	const [showForm, setShowForm] = useState(false)
+	const [showModal, setShowModal] = useState(false)
 	const [selectedCourseId, setSelectedCourseId] = useState<string>('')
-	const [formData, setFormData] = useState({
-		title: '',
-		content: '',
-		courseId: '',
-	})
 
 	useEffect(() => {
 		fetchData()
@@ -54,7 +52,12 @@ const LectureManagement: React.FC = () => {
 				getLectures(),
 				getCourses(),
 			])
-			setLectures(lecturesData)
+			// Преобразуем данные лекций для совместимости
+			const transformedLectures = lecturesData.map((lecture: any) => ({
+				...lecture,
+				courseId: lecture.course?.id || '',
+			}))
+			setLectures(transformedLectures)
 			setCourses(coursesData)
 		} catch (error) {
 			console.error('Ошибка при загрузке данных:', error)
@@ -66,7 +69,11 @@ const LectureManagement: React.FC = () => {
 	const fetchLectures = async () => {
 		try {
 			const data = await getLectures()
-			setLectures(data)
+			const transformedLectures = data.map((lecture: any) => ({
+				...lecture,
+				courseId: lecture.course?.id || '',
+			}))
+			setLectures(transformedLectures)
 		} catch (error) {
 			console.error('Ошибка при загрузке лекций:', error)
 		}
@@ -75,39 +82,31 @@ const LectureManagement: React.FC = () => {
 	const fetchLecturesByCourse = async (courseId: string) => {
 		try {
 			const data = await getLecturesByCourse(courseId)
-			setLectures(data)
+			const transformedLectures = data.map((lecture: any) => ({
+				...lecture,
+				courseId: lecture.course?.id || '',
+			}))
+			setLectures(transformedLectures)
 		} catch (error) {
 			console.error('Ошибка при загрузке лекций курса:', error)
 		}
 	}
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault()
+	const handleSave = async (formData: any) => {
 		try {
-			if (editingLecture) {
-				await updateLecture(editingLecture.id, formData)
-			} else {
-				await createLecture(formData)
-			}
 			if (selectedCourseId) {
 				fetchLecturesByCourse(selectedCourseId)
 			} else {
 				fetchLectures()
 			}
-			resetForm()
 		} catch (error) {
-			console.error('Ошибка при сохранении лекции:', error)
+			console.error('Ошибка при обновлении списка лекций:', error)
 		}
 	}
 
 	const handleEdit = (lecture: Lecture) => {
 		setEditingLecture(lecture)
-		setFormData({
-			title: lecture.title,
-			content: lecture.content,
-			courseId: lecture.course.id,
-		})
-		setShowForm(true)
+		setShowModal(true)
 	}
 
 	const handleDelete = async (lectureId: string) => {
@@ -125,10 +124,14 @@ const LectureManagement: React.FC = () => {
 		}
 	}
 
-	const resetForm = () => {
+	const handleAddNew = () => {
 		setEditingLecture(null)
-		setFormData({ title: '', content: '', courseId: '' })
-		setShowForm(false)
+		setShowModal(true)
+	}
+
+	const handleCloseModal = () => {
+		setShowModal(false)
+		setEditingLecture(null)
 	}
 
 	if (loading) {
@@ -139,7 +142,7 @@ const LectureManagement: React.FC = () => {
 		<div className={styles.lectureManagement}>
 			<div className={styles.header}>
 				<h1>Управление лекциями</h1>
-				<button className={styles.addButton} onClick={() => setShowForm(true)}>
+				<button className={styles.addButton} onClick={handleAddNew}>
 					+ Добавить лекцию
 				</button>
 			</div>
@@ -159,110 +162,53 @@ const LectureManagement: React.FC = () => {
 				</select>
 			</div>
 
-			{showForm && (
-				<div className={styles.formOverlay}>
-					<div className={styles.form}>
-						<h2>
-							{editingLecture ? 'Редактировать лекцию' : 'Добавить лекцию'}
-						</h2>
-						<form onSubmit={handleSubmit}>
-							<div className={styles.formGroup}>
-								<label>Название лекции:</label>
-								<input
-									type='text'
-									value={formData.title}
-									onChange={e =>
-										setFormData({ ...formData, title: e.target.value })
-									}
-									required
-								/>
+			<div className={styles.lecturesList}>
+				{lectures.length === 0 ? (
+					<div className={styles.emptyState}>
+						<p>Лекции не найдены</p>
+					</div>
+				) : (
+					lectures.map(lecture => (
+						<div key={lecture.id} className={styles.lectureCard}>
+							<div className={styles.lectureInfo}>
+								<h3>{lecture.title}</h3>
+								<p className={styles.courseName}>
+									Курс: {lecture.course.title}
+								</p>
+								<p className={styles.content}>
+									{lecture.content.substring(0, 100)}...
+								</p>
+								{lecture.pdf_file && (
+									<p className={styles.pdfInfo}>
+										📄 PDF файл: {lecture.pdf_file.split('/').pop()}
+									</p>
+								)}
 							</div>
-							<div className={styles.formGroup}>
-								<label>Курс:</label>
-								<select
-									value={formData.courseId}
-									onChange={e =>
-										setFormData({ ...formData, courseId: e.target.value })
-									}
-									required
+							<div className={styles.actions}>
+								<button
+									onClick={() => handleEdit(lecture)}
+									className={styles.editButton}
 								>
-									<option value=''>Выберите курс</option>
-									{courses.map(course => (
-										<option key={course.id} value={course.id}>
-											{course.title}
-										</option>
-									))}
-								</select>
-							</div>
-							<div className={styles.formGroup}>
-								<label>Содержание:</label>
-								<textarea
-									value={formData.content}
-									onChange={e =>
-										setFormData({ ...formData, content: e.target.value })
-									}
-									required
-									rows={10}
-								/>
-							</div>
-							<div className={styles.formActions}>
-								<button type='submit' className={styles.saveButton}>
-									{editingLecture ? 'Сохранить' : 'Создать'}
+									Редактировать
 								</button>
 								<button
-									type='button'
-									onClick={resetForm}
-									className={styles.cancelButton}
+									onClick={() => handleDelete(lecture.id)}
+									className={styles.deleteButton}
 								>
-									Отмена
+									Удалить
 								</button>
 							</div>
-						</form>
-					</div>
-				</div>
-			)}
-
-			<div className={styles.lecturesList}>
-				{lectures.map(lecture => (
-					<div key={lecture.id} className={styles.lectureItem}>
-						<div className={styles.lectureInfo}>
-							<h3>{lecture.title}</h3>
-							<p className={styles.courseName}>Курс: {lecture.course.title}</p>
-							<p className={styles.contentPreview}>
-								{lecture.content.substring(0, 150)}...
-							</p>
-							{lecture.pdf_file && (
-								<span className={styles.hasPdf}>📄 PDF прикреплен</span>
-							)}
-							{lecture.images && lecture.images.length > 0 && (
-								<span className={styles.hasImages}>
-									🖼️ {lecture.images.length} изображений
-								</span>
-							)}
 						</div>
-						<div className={styles.lectureActions}>
-							<button
-								onClick={() => handleEdit(lecture)}
-								className={styles.editButton}
-							>
-								Редактировать
-							</button>
-							<button
-								onClick={() => handleDelete(lecture.id)}
-								className={styles.deleteButton}
-							>
-								Удалить
-							</button>
-						</div>
-					</div>
-				))}
+					))
+				)}
 			</div>
 
-			{lectures.length === 0 && (
-				<div className={styles.noLectures}>
-					<p>Лекции пока не добавлены</p>
-				</div>
-			)}
+			<LectureModal
+				isOpen={showModal}
+				onClose={handleCloseModal}
+				lecture={editingLecture}
+				onSave={handleSave}
+			/>
 		</div>
 	)
 }

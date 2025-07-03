@@ -120,6 +120,81 @@
 	}
 }
 
+.answersContainer {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.answerItem {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	background: #f9fafb;
+}
+
+.answerInput {
+	flex: 1;
+	margin: 0;
+}
+
+.correctLabel {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 12px;
+	font-weight: normal;
+	margin: 0;
+	white-space: nowrap;
+
+	input[type="checkbox"] {
+		width: auto;
+		margin: 0;
+	}
+}
+
+.removeAnswerBtn {
+	background: #dc3545;
+	color: white;
+	border: none;
+	border-radius: 50%;
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: bold;
+	transition: all 0.2s ease;
+
+	&:hover {
+		background: #c82333;
+		transform: scale(1.1);
+	}
+}
+
+.addAnswerBtn {
+	background: #28a745;
+	color: white;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+	align-self: flex-start;
+
+	&:hover {
+		background: #218838;
+		transform: scale(1.05);
+	}
+}
+
 .formActions {
 	display: flex;
 	gap: 12px;

@@ -16,6 +16,29 @@
 	}
 }
 
+.headerButtons {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+}
+
+.bulkAddButton {
+	background: #10b981;
+	color: white;
+	border: none;
+	padding: 10px 16px;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+
+	&:hover {
+		background: #059669;
+		transform: translateY(-1px);
+	}
+}
+
 .addButton {
 	background: #007bff;
 	color: white;
@@ -274,4 +297,64 @@
 	padding: 40px;
 	font-size: 18px;
 	color: #666;
+}
+
+// Адаптивность для мобильных устройств
+@media (max-width: 768px) {
+	.testManagement {
+		padding: 10px;
+	}
+
+	.header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 16px;
+	}
+
+	.headerButtons {
+		width: 100%;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.bulkAddButton,
+	.addButton {
+		width: 100%;
+		justify-content: center;
+	}
+
+	.lectureFilter {
+		min-width: auto;
+		width: 100%;
+	}
+
+	.questionItem {
+		flex-direction: column;
+		gap: 16px;
+	}
+
+	.questionActions {
+		width: 100%;
+		justify-content: stretch;
+	}
+
+	.editButton,
+	.deleteButton {
+		flex: 1;
+	}
+
+	.form {
+		width: 95%;
+		padding: 20px;
+	}
+
+	.answerRow {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 8px;
+	}
+
+	.correctCheckbox {
+		justify-content: center;
+	}
 }

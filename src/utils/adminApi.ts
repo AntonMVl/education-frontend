@@ -18,6 +18,7 @@ export interface AdminUser {
 		lastName: string
 		login: string
 	}
+	overallProgress?: number
 }
 
 export interface CreateUserData {
@@ -185,6 +186,22 @@ class AdminApi {
 			if (axios.isAxiosError(error)) {
 				console.error('Статус:', error.response?.status)
 			}
+			throw error
+		}
+	}
+
+	// Получение прогресса пользователя
+	async getUserProgress(userId: number): Promise<number> {
+		try {
+			const response = await axios.get(`${this._url}/admin/users/${userId}/progress`, {
+				headers: this.getAuthHeaders(),
+			})
+			return response.data.progress
+		} catch (error: unknown) {
+			console.error(
+				'Ошибка getUserProgress:',
+				error instanceof Error ? error.message : error
+			)
 			throw error
 		}
 	}

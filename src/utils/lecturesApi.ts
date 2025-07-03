@@ -5,31 +5,32 @@ export interface Lecture {
 	title: string
 	content: string
 	courseId: string
-	order: number
 	pdf_file?: string
-	images?: string[]
+	has_test: boolean
 	createdAt: string
 	updatedAt: string
 }
 
-interface CreateLectureData {
+export interface CreateLectureData {
 	title: string
 	content: string
 	courseId: string
 	pdf_file?: string
-	images?: string[]
+	has_test: boolean
 }
 
-interface UpdateLectureData {
+export interface UpdateLectureData {
 	title?: string
 	content?: string
 	courseId?: string
 	pdf_file?: string
-	images?: string[]
+	has_test?: boolean
 }
 
-export const createLecture = async (lectureData: CreateLectureData) => {
+export const createLecture = async (lectureData: CreateLectureData, pdfFile?: File) => {
 	const token = localStorage.getItem('jwt')
+	
+	// Сначала создаем лекцию
 	const response = await fetch(`${apiUrl}/lecture`, {
 		method: 'POST',
 		headers: {
@@ -43,7 +44,14 @@ export const createLecture = async (lectureData: CreateLectureData) => {
 		throw new Error('Ошибка при создании лекции')
 	}
 
-	return response.json()
+	const lecture = await response.json()
+
+	// Если есть PDF файл, загружаем его отдельно
+	if (pdfFile && lecture.id) {
+		await uploadLecturePdf(lecture.id, pdfFile)
+	}
+
+	return lecture
 }
 
 export const getLectures = async () => {
@@ -96,9 +104,12 @@ export const getLecture = async (lectureId: string) => {
 
 export const updateLecture = async (
 	lectureId: string,
-	lectureData: UpdateLectureData
+	lectureData: UpdateLectureData,
+	pdfFile?: File
 ) => {
 	const token = localStorage.getItem('jwt')
+	
+	// Обновляем лекцию
 	const response = await fetch(`${apiUrl}/lecture/${lectureId}`, {
 		method: 'PATCH',
 		headers: {
@@ -112,7 +123,14 @@ export const updateLecture = async (
 		throw new Error('Ошибка при обновлении лекции')
 	}
 
-	return response.json()
+	const lecture = await response.json()
+
+	// Если есть новый PDF файл, загружаем его
+	if (pdfFile) {
+		await uploadLecturePdf(lectureId, pdfFile)
+	}
+
+	return lecture
 }
 
 export const deleteLecture = async (lectureId: string) => {

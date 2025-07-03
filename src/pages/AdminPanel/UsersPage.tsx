@@ -255,7 +255,7 @@ const UsersPage: React.FC = () => {
 		if (sortedUsers.length === 0) {
 			return (
 				<tr>
-					<td colSpan={8} className={styles.emptyMessage}>
+					<td colSpan={10} className={styles.emptyMessage}>
 						Пользователи не найдены
 					</td>
 				</tr>
@@ -273,7 +273,7 @@ const UsersPage: React.FC = () => {
 			if (userRole !== currentRole && currentRole !== '') {
 				rows.push(
 					<tr key={`separator-${userRole}`} className={styles.roleSeparator}>
-						<td colSpan={8} style={{ textAlign: 'center' }}>
+						<td colSpan={10} style={{ textAlign: 'center' }}>
 							{getRoleLabel(userRole).toUpperCase()}
 						</td>
 					</tr>
@@ -296,6 +296,23 @@ const UsersPage: React.FC = () => {
 						</span>
 					</td>
 					<td>{user.city}</td>
+					<td>
+						{user.role.toLowerCase() === 'user' ? (
+							<div className={styles.progressContainer}>
+								<div className={styles.progressBar}>
+									<div
+										className={styles.progressFill}
+										style={{ width: `${user.overallProgress || 0}%` }}
+									></div>
+								</div>
+								<span className={styles.progressText}>
+									{Math.round(user.overallProgress || 0)}%
+								</span>
+							</div>
+						) : (
+							<span className={styles.noProgress}>-</span>
+						)}
+					</td>
 					<td>
 						{user.createdAt
 							? new Date(user.createdAt).toLocaleDateString('ru-RU')
@@ -373,6 +390,7 @@ const UsersPage: React.FC = () => {
 							<th>Логин</th>
 							<th>Роль</th>
 							<th>Город</th>
+							<th>Прогресс обучения</th>
 							<th>Дата создания</th>
 							<th>Действия</th>
 						</tr>

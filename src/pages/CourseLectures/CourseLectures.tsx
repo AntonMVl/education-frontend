@@ -35,13 +35,10 @@ const CourseLectures: React.FC = () => {
 			if (!courseId) return
 
 			try {
-				const [lecturesData, progressData] = await Promise.all([
-					getCourseLectures(courseId),
-					getCourseProgress(courseId),
-				])
-
-				setLectures(lecturesData)
+				const progressData = await getCourseProgress(courseId)
 				setProgress(progressData)
+				// Лекции теперь приходят вместе с прогрессом курса
+				setLectures(progressData.course.lectures || [])
 			} catch (error) {
 				console.error('Ошибка при загрузке данных:', error)
 			} finally {

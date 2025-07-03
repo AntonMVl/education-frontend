@@ -19,7 +19,7 @@ interface CreateLectureData {
 	content: string
 	courseId: string
 	pdf_file?: string
-	images?: string[]
+	has_test: boolean
 }
 
 interface UpdateLectureData {
@@ -27,7 +27,7 @@ interface UpdateLectureData {
 	content?: string
 	courseId?: string
 	pdf_file?: string
-	images?: string[]
+	has_test?: boolean
 }
 
 const LecturesPage: React.FC = () => {
@@ -188,7 +188,8 @@ const LecturesPage: React.FC = () => {
 							<th>ID</th>
 							<th>Название</th>
 							<th>Содержание</th>
-							<th>Порядок</th>
+							<th>Курс</th>
+							<th>Тест</th>
 							<th>Дата создания</th>
 							<th>Действия</th>
 						</tr>
@@ -196,7 +197,7 @@ const LecturesPage: React.FC = () => {
 					<tbody>
 						{filteredLectures.length === 0 ? (
 							<tr>
-								<td colSpan={6} className={styles.emptyMessage}>
+								<td colSpan={7} className={styles.emptyMessage}>
 									Лекции не найдены
 								</td>
 							</tr>
@@ -210,7 +211,8 @@ const LecturesPage: React.FC = () => {
 											? `${lecture.content.substring(0, 50)}...`
 											: lecture.content}
 									</td>
-									<td>{lecture.order}</td>
+									<td>{lecture.courseId}</td>
+									<td>{lecture.has_test ? 'Да' : 'Нет'}</td>
 									<td>{formatDate(lecture.createdAt)}</td>
 									<td>
 										<div className={styles.actions}>
