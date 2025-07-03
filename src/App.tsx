@@ -7,7 +7,9 @@ import Layout from './components/Layout/Layout'
 import Popup from './components/Popup/Popup'
 import Preloader from './components/Preloader/Preloader'
 import { AdminPanel } from './pages/AdminPanel'
+import CourseLectures from './pages/CourseLectures/CourseLectures'
 import Courses from './pages/Courses/Courses'
+import LectureStudy from './pages/LectureStudy/LectureStudy'
 import SignIn from './pages/SignIn/SignIn'
 import SignUp from './pages/SignUp/SignUp'
 import StartPage from './pages/StartPage/StartPage'
@@ -179,6 +181,11 @@ function App() {
 							/>
 							<Route path='/profile' element={<UserAccount />} />
 							<Route path='/courses' element={<Courses />} />
+							<Route
+								path='/course/:courseId/lectures'
+								element={<CourseLectures />}
+							/>
+							<Route path='/lecture/:lectureId' element={<LectureStudy />} />
 							<Route
 								path='/admin/*'
 								element={

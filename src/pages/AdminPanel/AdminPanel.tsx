@@ -3,7 +3,9 @@ import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import styles from './AdminPanel.module.scss'
 import AdminsPage from './AdminsPage'
 import AdminStats from './AdminStats'
-import LecturesPage from './LecturesPage'
+import CourseManagement from './CourseManagement/CourseManagement'
+import LectureManagement from './LectureManagement/LectureManagement'
+import TestManagement from './TestManagement/TestManagement'
 import UsersPage from './UsersPage'
 
 const AdminPanel: React.FC = () => {
@@ -49,12 +51,30 @@ const AdminPanel: React.FC = () => {
 					</Link>
 
 					<Link
+						to='/admin/courses'
+						className={`${styles.navLink} ${
+							isActiveLink('/admin/courses') ? styles.active : ''
+						}`}
+					>
+						Курсы
+					</Link>
+
+					<Link
 						to='/admin/lectures'
 						className={`${styles.navLink} ${
 							isActiveLink('/admin/lectures') ? styles.active : ''
 						}`}
 					>
 						Лекции
+					</Link>
+
+					<Link
+						to='/admin/tests'
+						className={`${styles.navLink} ${
+							isActiveLink('/admin/tests') ? styles.active : ''
+						}`}
+					>
+						Тесты
 					</Link>
 				</nav>
 			</div>
@@ -64,7 +84,9 @@ const AdminPanel: React.FC = () => {
 					<Route index element={<AdminStats />} />
 					<Route path='users' element={<UsersPage />} />
 					<Route path='admins' element={<AdminsPage />} />
-					<Route path='lectures' element={<LecturesPage />} />
+					<Route path='courses' element={<CourseManagement />} />
+					<Route path='lectures' element={<LectureManagement />} />
+					<Route path='tests' element={<TestManagement />} />
 				</Routes>
 			</div>
 		</div>

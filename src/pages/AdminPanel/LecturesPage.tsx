@@ -2,14 +2,33 @@ import React, { useEffect, useState } from 'react'
 import PermissionErrorModal from '../../components/PermissionErrorModal/PermissionErrorModal'
 import { usePermissions } from '../../hooks/usePermissions'
 import { Permission } from '../../types/permissions'
-import lecturesApi, {
-	CreateLectureData,
+import {
 	Lecture,
-	UpdateLectureData,
+	createLecture,
+	deleteLecture,
+	getLectures,
+	updateLecture,
 } from '../../utils/lecturesApi'
 import ConfirmModal from './ConfirmModal'
 import LectureModal from './LectureModal'
 import styles from './LecturesPage.module.scss'
+
+// Типы для создания и обновления лекций
+interface CreateLectureData {
+	title: string
+	content: string
+	courseId: string
+	pdf_file?: string
+	images?: string[]
+}
+
+interface UpdateLectureData {
+	title?: string
+	content?: string
+	courseId?: string
+	pdf_file?: string
+	images?: string[]
+}
 
 const LecturesPage: React.FC = () => {
 	const [lectures, setLectures] = useState<Lecture[]>([])
@@ -39,7 +58,7 @@ const LecturesPage: React.FC = () => {
 	const fetchLectures = async () => {
 		try {
 			setLoading(true)
-			const data = await lecturesApi.getLectures()
+			const data = await getLectures()
 			setLectures(data)
 			setError('')
 		} catch {
@@ -89,7 +108,7 @@ const LecturesPage: React.FC = () => {
 		if (!lectureToDelete) return
 
 		try {
-			await lecturesApi.deleteLecture(lectureToDelete.id)
+			await deleteLecture(lectureToDelete.id)
 			await fetchLectures()
 		} catch {
 			setError('Ошибка удаления лекции')
@@ -108,10 +127,7 @@ const LecturesPage: React.FC = () => {
 					})
 					return
 				}
-				await lecturesApi.updateLecture(
-					editingLecture.id,
-					lectureData as UpdateLectureData
-				)
+				await updateLecture(editingLecture.id, lectureData as UpdateLectureData)
 			} else {
 				if (!hasPermission(Permission.MANAGE_LECTURES)) {
 					setPermissionError({
@@ -120,7 +136,7 @@ const LecturesPage: React.FC = () => {
 					})
 					return
 				}
-				await lecturesApi.createLecture(lectureData as CreateLectureData)
+				await createLecture(lectureData as CreateLectureData)
 			}
 			await fetchLectures()
 		} catch (error: unknown) {
@@ -133,7 +149,7 @@ const LecturesPage: React.FC = () => {
 	const filteredLectures = lectures.filter(
 		lecture =>
 			lecture.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			lecture.description.toLowerCase().includes(searchTerm.toLowerCase())
+			lecture.content.toLowerCase().includes(searchTerm.toLowerCase())
 	)
 
 	const formatDate = (dateString: string) => {
@@ -171,7 +187,7 @@ const LecturesPage: React.FC = () => {
 						<tr>
 							<th>ID</th>
 							<th>Название</th>
-							<th>Описание</th>
+							<th>Содержание</th>
 							<th>Порядок</th>
 							<th>Дата создания</th>
 							<th>Действия</th>
@@ -190,9 +206,9 @@ const LecturesPage: React.FC = () => {
 									<td>{lecture.id}</td>
 									<td>{lecture.title}</td>
 									<td className={styles.description}>
-										{lecture.description.length > 50
-											? `${lecture.description.substring(0, 50)}...`
-											: lecture.description}
+										{lecture.content.length > 50
+											? `${lecture.content.substring(0, 50)}...`
+											: lecture.content}
 									</td>
 									<td>{lecture.order}</td>
 									<td>{formatDate(lecture.createdAt)}</td>

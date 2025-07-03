@@ -10,6 +10,7 @@ import { cityNames } from '../../constants/DropDownOptionValuse'
 import { RootState } from '../../store/store'
 import { setUser } from '../../store/userSlice'
 import mainApi from '../../utils/authApi'
+import { getOverallProgress } from '../../utils/coursesApi'
 import styles from './UserAccount.module.scss'
 
 const UserAccount: FC = () => {
@@ -27,6 +28,7 @@ const UserAccount: FC = () => {
 		confirmNewPassword: '',
 	})
 	const [passwordError, setPasswordError] = useState('')
+	const [overallProgress, setOverallProgress] = useState<number>(0)
 
 	useEffect(() => {
 		if (currentUser) {
@@ -43,6 +45,22 @@ const UserAccount: FC = () => {
 			passwords.newPassword !== '' || passwords.confirmNewPassword !== ''
 		setIsChanged(hasFormChanges || hasPasswordChanges)
 	}, [formData, originalData, passwords])
+
+	// Загружаем общий прогресс обучения
+	useEffect(() => {
+		const loadProgress = async () => {
+			try {
+				const progress = await getOverallProgress()
+				setOverallProgress(progress.progress)
+			} catch (error) {
+				console.error('Ошибка при загрузке прогресса:', error)
+			}
+		}
+
+		if (currentUser && currentUser.role === 'user') {
+			loadProgress()
+		}
+	}, [currentUser])
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target
@@ -130,6 +148,23 @@ const UserAccount: FC = () => {
 				/>
 			</Link>
 			<h1 className={styles.profile__title}>Ваш личный кабинет</h1>
+
+			{/* Отображение прогресса обучения для пользователей */}
+			{currentUser.role === 'user' && (
+				<div className={styles.progressSection}>
+					<h2 className={styles.progressTitle}>Общий прогресс обучения</h2>
+					<div className={styles.progressBar}>
+						<div
+							className={styles.progressFill}
+							style={{ width: `${overallProgress}%` }}
+						></div>
+					</div>
+					<span className={styles.progressText}>
+						{Math.round(overallProgress)}% завершено
+					</span>
+				</div>
+			)}
+
 			<form noValidate className={styles.profile__form} onSubmit={handleSubmit}>
 				<div className={styles.profile__inputContainer}>
 					<FormInput
@@ -198,9 +233,11 @@ const UserAccount: FC = () => {
 								type='button'
 								onClick={handleEdit}
 							/>
-							<Link to={'/courses'} className={styles.profile__buttonLink}>
-								К обучению
-							</Link>
+							{currentUser.role === 'user' && (
+								<Link to={'/courses'} className={styles.profile__buttonLink}>
+									К обучению
+								</Link>
+							)}
 						</>
 					)}
 				</div>

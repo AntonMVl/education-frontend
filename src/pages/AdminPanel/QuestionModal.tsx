@@ -1,11 +1,25 @@
 import React, { useEffect, useState } from 'react'
-import lecturesApi, { Lecture } from '../../utils/lecturesApi'
-import {
-	CreateQuestionData,
-	Question,
-	UpdateQuestionData,
-} from '../../utils/questionsApi'
+import { Lecture, getLectures } from '../../utils/lecturesApi'
+import { Question } from '../../utils/questionsApi'
 import styles from './QuestionModal.module.scss'
+
+// Типы для создания и обновления вопросов
+interface CreateQuestionData {
+	text: string
+	lectureId: string
+	answers: CreateAnswerData[]
+}
+
+interface UpdateQuestionData {
+	text?: string
+	lectureId?: string
+	answers?: CreateAnswerData[]
+}
+
+interface CreateAnswerData {
+	text: string
+	isCorrect: boolean
+}
 
 interface QuestionModalProps {
 	isOpen: boolean
@@ -22,7 +36,8 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 }) => {
 	const [formData, setFormData] = useState<CreateQuestionData>({
 		text: '',
-		lectureId: 1,
+		lectureId: '1',
+		answers: [],
 	})
 	const [lectures, setLectures] = useState<Lecture[]>([])
 	const [loading, setLoading] = useState(false)
@@ -39,11 +54,16 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 			setFormData({
 				text: question.text,
 				lectureId: question.lectureId,
+				answers: question.answers.map(answer => ({
+					text: answer.text,
+					isCorrect: answer.isCorrect,
+				})),
 			})
 		} else {
 			setFormData({
 				text: '',
-				lectureId: lectures.length > 0 ? lectures[0].id : 1,
+				lectureId: lectures.length > 0 ? lectures[0].id : '1',
+				answers: [],
 			})
 		}
 		setError('')
@@ -51,7 +71,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 
 	const fetchLectures = async () => {
 		try {
-			const data = await lecturesApi.getLectures()
+			const data = await getLectures()
 			setLectures(data)
 		} catch {
 			setError('Ошибка загрузки списка лекций')
@@ -66,7 +86,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 		const { name, value } = e.target
 		setFormData(prev => ({
 			...prev,
-			[name]: name === 'lectureId' ? parseInt(value) : value,
+			[name]: name === 'lectureId' ? value : value,
 		}))
 	}
 

@@ -1,12 +1,32 @@
 import React, { useEffect, useState } from 'react'
-import questionsApi, {
-	CreateQuestionData,
+import {
 	Question,
-	UpdateQuestionData,
+	createQuestion,
+	deleteQuestion,
+	getQuestions,
+	updateQuestion,
 } from '../../utils/questionsApi'
 import ConfirmModal from './ConfirmModal'
 import QuestionModal from './QuestionModal'
 import styles from './QuestionsPage.module.scss'
+
+// Типы для создания и обновления вопросов
+interface CreateQuestionData {
+	text: string
+	lectureId: string
+	answers: CreateAnswerData[]
+}
+
+interface UpdateQuestionData {
+	text?: string
+	lectureId?: string
+	answers?: CreateAnswerData[]
+}
+
+interface CreateAnswerData {
+	text: string
+	isCorrect: boolean
+}
 
 const QuestionsPage: React.FC = () => {
 	const [questions, setQuestions] = useState<Question[]>([])
@@ -27,7 +47,7 @@ const QuestionsPage: React.FC = () => {
 	const fetchQuestions = async () => {
 		try {
 			setLoading(true)
-			const data = await questionsApi.getQuestions()
+			const data = await getQuestions()
 			setQuestions(data)
 			setError('')
 		} catch {
@@ -56,7 +76,7 @@ const QuestionsPage: React.FC = () => {
 		if (!questionToDelete) return
 
 		try {
-			await questionsApi.deleteQuestion(questionToDelete.id)
+			await deleteQuestion(questionToDelete.id)
 			await fetchQuestions()
 		} catch {
 			setError('Ошибка удаления вопроса')
@@ -68,12 +88,12 @@ const QuestionsPage: React.FC = () => {
 	) => {
 		try {
 			if (editingQuestion) {
-				await questionsApi.updateQuestion(
+				await updateQuestion(
 					editingQuestion.id,
 					questionData as UpdateQuestionData
 				)
 			} else {
-				await questionsApi.createQuestion(questionData as CreateQuestionData)
+				await createQuestion(questionData as CreateQuestionData)
 			}
 			await fetchQuestions()
 		} catch (error: unknown) {

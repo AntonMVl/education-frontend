@@ -1,81 +1,150 @@
-import axios from 'axios'
+import { apiUrl } from '../constants/urlConstants'
 
-const API_BASE_URL = 'http://localhost:3001'
+export interface Answer {
+	id: string
+	text: string
+	isCorrect: boolean
+	questionId: string
+}
 
 export interface Question {
-	id: number
+	id: string
 	text: string
-	lectureId: number
+	lectureId: string
+	answers: Answer[]
 	createdAt: string
 	updatedAt: string
 }
 
-export interface CreateQuestionData {
+interface CreateAnswerData {
 	text: string
-	lectureId: number
+	isCorrect: boolean
 }
 
-export interface UpdateQuestionData {
+interface CreateQuestionData {
+	text: string
+	lectureId: string
+	answers: CreateAnswerData[]
+}
+
+interface UpdateQuestionData {
 	text?: string
-	lectureId?: number
+	lectureId?: string
+	answers?: CreateAnswerData[]
 }
 
-class QuestionsApi {
-	private getAuthHeaders() {
-		const token = localStorage.getItem('jwt')
-		return {
-			'Content-Type': 'application/json',
+export const createQuestion = async (questionData: CreateQuestionData) => {
+	const token = localStorage.getItem('jwt')
+	const response = await fetch(`${apiUrl}/question`, {
+		method: 'POST',
+		headers: {
 			Authorization: `Bearer ${token}`,
-		}
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(questionData),
+	})
+
+	if (!response.ok) {
+		throw new Error('Ошибка при создании вопроса')
 	}
 
-	async getQuestions(): Promise<Question[]> {
-		const response = await axios.get(`${API_BASE_URL}/questions`, {
-			headers: this.getAuthHeaders(),
-		})
-		return response.data
-	}
-
-	async getQuestion(id: number): Promise<Question> {
-		const response = await axios.get(`${API_BASE_URL}/questions/${id}`, {
-			headers: this.getAuthHeaders(),
-		})
-		return response.data
-	}
-
-	async getQuestionsByLecture(lectureId: number): Promise<Question[]> {
-		const response = await axios.get(
-			`${API_BASE_URL}/questions/lecture/${lectureId}`,
-			{
-				headers: this.getAuthHeaders(),
-			}
-		)
-		return response.data
-	}
-
-	async createQuestion(data: CreateQuestionData): Promise<Question> {
-		const response = await axios.post(`${API_BASE_URL}/questions`, data, {
-			headers: this.getAuthHeaders(),
-		})
-		return response.data
-	}
-
-	async updateQuestion(
-		id: number,
-		data: UpdateQuestionData
-	): Promise<Question> {
-		const response = await axios.put(`${API_BASE_URL}/questions/${id}`, data, {
-			headers: this.getAuthHeaders(),
-		})
-		return response.data
-	}
-
-	async deleteQuestion(id: number): Promise<void> {
-		await axios.delete(`${API_BASE_URL}/questions/${id}`, {
-			headers: this.getAuthHeaders(),
-		})
-	}
+	return response.json()
 }
 
-const questionsApi = new QuestionsApi()
+export const getQuestions = async () => {
+	const token = localStorage.getItem('jwt')
+	const response = await fetch(`${apiUrl}/question`, {
+		headers: {
+			Authorization: `Bearer ${token}`,
+			'Content-Type': 'application/json',
+		},
+	})
+
+	if (!response.ok) {
+		throw new Error('Ошибка при загрузке вопросов')
+	}
+
+	return response.json()
+}
+
+export const getQuestionsByLecture = async (lectureId: string) => {
+	const token = localStorage.getItem('jwt')
+	const response = await fetch(`${apiUrl}/question/lecture/${lectureId}`, {
+		headers: {
+			Authorization: `Bearer ${token}`,
+			'Content-Type': 'application/json',
+		},
+	})
+
+	if (!response.ok) {
+		throw new Error('Ошибка при загрузке вопросов лекции')
+	}
+
+	return response.json()
+}
+
+export const getQuestion = async (questionId: string) => {
+	const token = localStorage.getItem('jwt')
+	const response = await fetch(`${apiUrl}/question/${questionId}`, {
+		headers: {
+			Authorization: `Bearer ${token}`,
+			'Content-Type': 'application/json',
+		},
+	})
+
+	if (!response.ok) {
+		throw new Error('Ошибка при загрузке вопроса')
+	}
+
+	return response.json()
+}
+
+export const updateQuestion = async (
+	questionId: string,
+	questionData: UpdateQuestionData
+) => {
+	const token = localStorage.getItem('jwt')
+	const response = await fetch(`${apiUrl}/question/${questionId}`, {
+		method: 'PATCH',
+		headers: {
+			Authorization: `Bearer ${token}`,
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(questionData),
+	})
+
+	if (!response.ok) {
+		throw new Error('Ошибка при обновлении вопроса')
+	}
+
+	return response.json()
+}
+
+export const deleteQuestion = async (questionId: string) => {
+	const token = localStorage.getItem('jwt')
+	const response = await fetch(`${apiUrl}/question/${questionId}`, {
+		method: 'DELETE',
+		headers: {
+			Authorization: `Bearer ${token}`,
+			'Content-Type': 'application/json',
+		},
+	})
+
+	if (!response.ok) {
+		throw new Error('Ошибка при удалении вопроса')
+	}
+
+	return response.json()
+}
+
+// Default экспорт
+const questionsApi = {
+	createQuestion,
+	getQuestions,
+	getQuestionsByLecture,
+	getQuestion,
+	updateQuestion,
+	deleteQuestion,
+}
+
 export default questionsApi
