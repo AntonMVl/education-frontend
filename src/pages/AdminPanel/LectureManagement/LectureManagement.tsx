@@ -113,6 +113,11 @@ const LectureManagement: React.FC = () => {
 		if (window.confirm('Вы уверены, что хотите удалить эту лекцию?')) {
 			try {
 				await deleteLecture(lectureId)
+				
+				// Немедленно обновляем состояние, удаляя лекцию из списка
+				setLectures(prevLectures => prevLectures.filter(lecture => lecture.id !== lectureId))
+				
+				// Дополнительно обновляем данные с сервера для синхронизации
 				if (selectedCourseId) {
 					fetchLecturesByCourse(selectedCourseId)
 				} else {
@@ -120,6 +125,7 @@ const LectureManagement: React.FC = () => {
 				}
 			} catch (error) {
 				console.error('Ошибка при удалении лекции:', error)
+				alert('Ошибка при удалении лекции. Попробуйте еще раз.')
 			}
 		}
 	}

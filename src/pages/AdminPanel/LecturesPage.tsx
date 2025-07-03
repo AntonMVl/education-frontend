@@ -109,6 +109,15 @@ const LecturesPage: React.FC = () => {
 
 		try {
 			await deleteLecture(lectureToDelete.id)
+			
+			// Немедленно обновляем состояние, удаляя лекцию из списка
+			setLectures(prevLectures => prevLectures.filter(lecture => lecture.id !== lectureToDelete.id))
+			
+			// Закрываем модальное окно подтверждения
+			setIsConfirmModalOpen(false)
+			setLectureToDelete(null)
+			
+			// Дополнительно обновляем данные с сервера для синхронизации
 			await fetchLectures()
 		} catch {
 			setError('Ошибка удаления лекции')

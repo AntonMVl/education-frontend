@@ -155,7 +155,10 @@ const TestManagement: React.FC = () => {
 				await deleteQuestion(questionId)
 				console.log('Вопрос успешно удален')
 				
-				// Обновляем список вопросов
+				// Немедленно обновляем состояние, удаляя вопрос из списка
+				setQuestions(prevQuestions => prevQuestions.filter(question => question.id.toString() !== questionId))
+				
+				// Дополнительно обновляем данные с сервера для синхронизации
 				if (selectedLectureId) {
 					await fetchQuestionsByLecture(selectedLectureId)
 				} else {

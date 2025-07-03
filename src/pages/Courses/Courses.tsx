@@ -16,8 +16,10 @@ interface Course {
 	title: string
 	description?: string
 	order_number: number
+	cover_image?: string
 	images: CourseImage[]
 	lectures: CourseLecture[]
+	lecturesCount?: number
 	isAvailable: boolean
 	progress: number
 	completed: boolean
@@ -72,7 +74,12 @@ const Courses: React.FC = () => {
 							onClick={() => handleCourseClick(course)}
 						>
 							<div className={styles.courseImage}>
-								{course.images && course.images.length > 0 ? (
+								{course.cover_image ? (
+									<img 
+										src={`http://localhost:3001${course.cover_image}`} 
+										alt={course.title} 
+									/>
+								) : course.images && course.images.length > 0 ? (
 									<img src={course.images[0].file_path} alt={course.title} />
 								) : (
 									<div className={styles.placeholderImage}>

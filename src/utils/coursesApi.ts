@@ -8,8 +8,10 @@ export interface Course {
 	title: string
 	description?: string
 	order_number: number
+	cover_image?: string
 	images: CourseImage[]
 	lectures: CourseLecture[]
+	lecturesCount?: number
 	isAvailable: boolean
 	progress: number
 	completed: boolean
@@ -28,12 +30,14 @@ export interface CreateCourseData {
 	title: string
 	description?: string
 	order_number: number
+	cover_image?: string
 }
 
 export interface UpdateCourseData {
 	title?: string
 	description?: string
 	order_number?: number
+	cover_image?: string
 }
 
 // Получить доступные курсы для пользователя
@@ -214,6 +218,36 @@ export const checkTestAnswers = async (lectureId: string, answers: any[]) => {
 	return response.data
 }
 
+// Загрузить обложку курса
+export const uploadCourseCover = async (courseId: string, file: File) => {
+	const token = localStorage.getItem('jwt')
+	const formData = new FormData()
+	formData.append('cover', file)
+
+	const response = await axios.post(
+		`${API_BASE_URL}/course/${courseId}/cover`,
+		formData,
+		{
+			headers: {
+				Authorization: `Bearer ${token}`,
+				'Content-Type': 'multipart/form-data',
+			},
+		}
+	)
+	return response.data
+}
+
+// Удалить обложку курса
+export const removeCourseCover = async (courseId: string) => {
+	const token = localStorage.getItem('jwt')
+	const response = await axios.delete(`${API_BASE_URL}/course/${courseId}/cover`, {
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	})
+	return response.data
+}
+
 // Default экспорт
 const coursesApi = {
 	getAvailableCourses,
@@ -229,6 +263,8 @@ const coursesApi = {
 	getLecture,
 	getRandomQuestions,
 	checkTestAnswers,
+	uploadCourseCover,
+	removeCourseCover,
 }
 
 export default coursesApi
